@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('branch_stocks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('branch_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->foreignId('menu_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->decimal('stock', 10, 2)->default(0);    // stok di cabang ini
+            $table->decimal('custom_price', 10, 2)
+                ->nullable();                             // null = pakai base_price
+            $table->timestamps();
+
+            // Satu cabang tidak boleh duplikat menu
+            $table->unique(['branch_id', 'menu_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('branch_stocks');
+    }
+};
