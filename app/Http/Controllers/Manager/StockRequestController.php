@@ -50,21 +50,30 @@ class StockRequestController extends Controller
 // Manager final confirm → stok bertambah
     public function confirmDelivery(StockRequest $stockRequest)
     {
-        if ($stockRequest->delivery_status !== 'delivered') {
+        if ($stockRequest->status !== 'approved' || $stockRequest->delivery_status !== 'delivered') {
             return back()->with('error', 'Admin cabang belum mengkonfirmasi kedatangan barang!');
         }
 
-        DB::transaction(function () use ($stockRequest) {
-            $stockRequest->update([
-                'delivery_status' => 'confirmed',
-            ]);
+        try {
+            DB::transaction(function () use ($stockRequest) {
+                $stockRequest = StockRequest::whereKey($stockRequest->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            // Sekarang baru tambah stok
-            if ($stockRequest->type === 'stock') {
-                if ($stockRequest->stock_item_type === 'bahan_baku') {
-                    $ingredient = Ingredient::where('nama_bahan', $stockRequest->item_name)->first();
+                if ($stockRequest->status !== 'approved' || $stockRequest->delivery_status !== 'delivered') {
+                    throw new \Exception('Pengajuan ini sudah dikonfirmasi atau belum siap dikonfirmasi.');
+                }
 
-                    if ($ingredient) {
+                if ($stockRequest->type === 'stock') {
+                    if ($stockRequest->stock_item_type === 'bahan_baku') {
+                        $ingredient = $stockRequest->ingredient_id
+                            ? Ingredient::find($stockRequest->ingredient_id)
+                            : Ingredient::where('nama_bahan', $stockRequest->item_name)->first();
+
+                        if (!$ingredient) {
+                            throw new \Exception('Bahan baku pada pengajuan tidak ditemukan.');
+                        }
+
                         IngredientStock::firstOrCreate(
                             [
                                 'branch_id' => $stockRequest->branch_id,
@@ -72,11 +81,15 @@ class StockRequestController extends Controller
                             ],
                             ['stok_sekarang' => 0, 'stok_minimum' => 0]
                         )->increment('stok_sekarang', $stockRequest->quantity);
-                    }
-                } else {
-                    $menu = Menu::where('name', $stockRequest->item_name)->first();
+                    } else {
+                        $menu = $stockRequest->menu_id
+                            ? Menu::find($stockRequest->menu_id)
+                            : Menu::where('name', $stockRequest->item_name)->first();
 
-                    if ($menu) {
+                        if (!$menu || !$menu->isQuantityBased()) {
+                            throw new \Exception('Produk jadi pada pengajuan tidak ditemukan.');
+                        }
+
                         BranchStock::firstOrCreate(
                             [
                                 'branch_id' => $stockRequest->branch_id,
@@ -86,8 +99,14 @@ class StockRequestController extends Controller
                         )->increment('stock', $stockRequest->quantity);
                     }
                 }
-            }
-        });
+
+                $stockRequest->update([
+                'delivery_status' => 'confirmed',
+                ]);
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Pengiriman dikonfirmasi! Stok cabang telah bertambah.');
     }

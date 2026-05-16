@@ -8,12 +8,13 @@ class TransactionItem extends Model
 {
     protected $fillable = [
         'transaction_id', 'menu_id',
-        'menu_name', 'price', 'quantity', 'subtotal'
+        'menu_name', 'price', 'quantity', 'subtotal', 'recipe_snapshot'
     ];
 
     protected $casts = [
         'price'    => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'recipe_snapshot' => 'array',
     ];
 
     public function transaction() {

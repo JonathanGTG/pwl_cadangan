@@ -163,9 +163,7 @@ class MenuController extends Controller
                 'is_available' => $request->has('is_available'),
             ]);
 
-            // Update resep jika minuman
             if ($stockType === 'bahan_baku') {
-                // Hapus resep lama, ganti dengan yang baru
                 $menu->ingredients()->delete();
 
                 foreach ($request->ingredients ?? [] as $ing) {
@@ -176,6 +174,33 @@ class MenuController extends Controller
                             'jumlah_per_sajian' => $ing['jumlah'],
                         ]);
                     }
+                }
+
+                BranchStock::where('menu_id', $menu->id)->update(['stock' => 0]);
+
+                $branches = Branch::where('status', 'active')->get();
+                foreach ($branches as $branch) {
+                    BranchStock::firstOrCreate(
+                        ['branch_id' => $branch->id, 'menu_id' => $menu->id],
+                        ['stock' => 0, 'custom_price' => null]
+                    );
+
+                    foreach ($request->ingredients ?? [] as $ing) {
+                        if (empty($ing['ingredient_id'])) continue;
+                        IngredientStock::firstOrCreate(
+                            ['branch_id' => $branch->id, 'ingredient_id' => $ing['ingredient_id']],
+                            ['stok_sekarang' => 0, 'stok_minimum' => 0]
+                        );
+                    }
+                }
+            } else {
+                $menu->ingredients()->delete();
+
+                foreach (Branch::where('status', 'active')->get() as $branch) {
+                    BranchStock::firstOrCreate(
+                        ['branch_id' => $branch->id, 'menu_id' => $menu->id],
+                        ['stock' => 0, 'custom_price' => null]
+                    );
                 }
             }
         });

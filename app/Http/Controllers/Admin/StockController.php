@@ -14,6 +14,7 @@ class StockController extends Controller
 
         $stocks = BranchStock::with('menu')
                              ->where('branch_id', $branchId)
+                             ->whereHas('menu', fn($q) => $q->where('stock_type', 'kuantitas_jadi'))
                              ->latest()
                              ->get();
 

@@ -4,15 +4,20 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\BranchStock;
+use App\Models\Ingredient;
+use App\Models\IngredientStock;
+use App\Models\Menu;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::with('users')->latest()->get();
+        $branches = Branch::withTrashed()->with('users')->latest()->get();
         return view('manager.branches.index', compact('branches'));
     }
 
@@ -34,22 +39,38 @@ class BranchController extends Controller
             'admin_password' => 'required|string|min:8',
         ]);
 
-        // 1. Buat cabang
-        $branch = Branch::create([
-            'name'    => $request->name,
-            'address' => $request->address,
-            'phone'   => $request->phone,
-            'status'  => $request->status,
-        ]);
+        $branch = DB::transaction(function () use ($request) {
+            $branch = Branch::create([
+                'name'    => $request->name,
+                'address' => $request->address,
+                'phone'   => $request->phone,
+                'status'  => $request->status,
+            ]);
 
-        // 2. Buat akun admin cabang otomatis
-        User::create([
-            'name'      => $request->admin_name,
-            'email'     => $request->admin_email,
-            'password'  => Hash::make($request->admin_password),
-            'role'      => 'admin',
-            'branch_id' => $branch->id,
-        ]);
+            User::create([
+                'name'      => $request->admin_name,
+                'email'     => $request->admin_email,
+                'password'  => Hash::make($request->admin_password),
+                'role'      => 'admin',
+                'branch_id' => $branch->id,
+            ]);
+
+            foreach (Menu::withTrashed()->get() as $menu) {
+                BranchStock::firstOrCreate(
+                    ['branch_id' => $branch->id, 'menu_id' => $menu->id],
+                    ['stock' => 0, 'custom_price' => null]
+                );
+            }
+
+            foreach (Ingredient::all() as $ingredient) {
+                IngredientStock::firstOrCreate(
+                    ['branch_id' => $branch->id, 'ingredient_id' => $ingredient->id],
+                    ['stok_sekarang' => 0, 'stok_minimum' => 0]
+                );
+            }
+
+            return $branch;
+        });
 
         return redirect()->route('manager.branches.index')
                          ->with('success', "Cabang {$branch->name} dan akun admin berhasil dibuat!");
@@ -79,9 +100,20 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        $branch->forceDelete();
+        $branch->update(['status' => 'inactive']);
+        $branch->delete();
         return redirect()->route('manager.branches.index')
-                        ->with('success', 'Cabang berhasil dihapus permanen!');
+                        ->with('success', 'Cabang berhasil dinonaktifkan!');
+    }
+
+    public function restore($id)
+    {
+        $branch = Branch::withTrashed()->findOrFail($id);
+        $branch->restore();
+        $branch->update(['status' => 'active']);
+
+        return redirect()->route('manager.branches.index')
+            ->with('success', 'Cabang berhasil dipulihkan!');
     }
 
     // Tambah kasir untuk cabang

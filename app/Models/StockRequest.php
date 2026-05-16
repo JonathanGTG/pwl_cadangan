@@ -8,7 +8,7 @@ class StockRequest extends Model
 {
     protected $fillable = [
         'branch_id', 'requested_by', 'verified_by',
-        'type', 'stock_item_type', 'item_name', 'unit', 'quantity',
+        'type', 'stock_item_type', 'ingredient_id', 'menu_id', 'item_name', 'unit', 'quantity',
         'reason', 'status', 'rejection_note', 'verified_at',
         'delivery_status', 'delivery_note', 'delivery_photo',
         'delivered_at', 'delivered_by',
@@ -33,5 +33,13 @@ class StockRequest extends Model
 
     public function verifiedBy() {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function ingredient() {
+        return $this->belongsTo(Ingredient::class);
+    }
+
+    public function menu() {
+        return $this->belongsTo(Menu::class);
     }
 }

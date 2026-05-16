@@ -14,10 +14,17 @@ class DashboardController extends Controller
 
         $data = [
             // Menu tersedia di cabang ini
-            'available_menus' => BranchStock::where('branch_id', $branchId)
-                                            ->where('stock', '>', 0)
-                                            ->with('menu')
-                                            ->get(),
+            'available_menus' => BranchStock::with(['menu.ingredients.ingredient'])
+                ->where('branch_id', $branchId)
+                ->whereHas('menu', fn($q) => $q->where('is_available', true))
+                ->get()
+                ->filter(function (BranchStock $stock) use ($branchId) {
+                    if ($stock->menu->isQuantityBased()) {
+                        return $stock->stock > 0;
+                    }
+
+                    return $stock->menu->checkIngredients($branchId, 1)['ok'];
+                }),
 
             // Transaksi hari ini oleh kasir ini
             'today_transactions' => Transaction::where('kasir_id', auth()->id())

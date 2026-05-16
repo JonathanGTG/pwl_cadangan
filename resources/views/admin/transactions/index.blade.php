@@ -189,26 +189,23 @@
 </div>
 
 @endsection
-@php
-    $transactionMap = $transactions->mapWithKeys(fn($trx) => [
-        $trx->id => [
-            'invoice'  => $trx->invoice_number,
-            'subtotal' => (float) $trx->subtotal,
-            'discount' => (float) $trx->discount_amount,
-            'total'    => (float) $trx->total,
-            'items'    => $trx->items->map(fn($item) => [
-                'name'     => $item->menu_name,
-                'quantity' => (float) $item->quantity,
-                'price'    => (float) $item->price,
-                'subtotal' => (float) $item->subtotal,
-            ])->values(),
-        ],
-    ]);
-@endphp
 
 @push('scripts')
 <script>
-const transactionDetails = @json($transactionMap);
+const transactionDetails = @json($transactions->mapWithKeys(fn($trx) => [
+    $trx->id => [
+        'invoice' => $trx->invoice_number,
+        'subtotal' => (float) $trx->subtotal,
+        'discount' => (float) $trx->discount_amount,
+        'total' => (float) $trx->total,
+        'items' => $trx->items->map(fn($item) => [
+            'name' => $item->menu_name,
+            'quantity' => (float) $item->quantity,
+            'price' => (float) $item->price,
+            'subtotal' => (float) $item->subtotal,
+        ])->values(),
+    ],
+]));
 
 const rupiah = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
 

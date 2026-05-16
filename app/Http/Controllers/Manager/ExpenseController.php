@@ -56,6 +56,10 @@ class ExpenseController extends Controller
             'rejection_note' => 'required|string|min:5',
         ]);
 
+        if ($expense->status !== 'pending') {
+            return back()->with('error', 'Pengeluaran ini sudah diproses!');
+        }
+
         $expense->update([
             'status'      => 'rejected',
             'verified_by' => auth()->id(),

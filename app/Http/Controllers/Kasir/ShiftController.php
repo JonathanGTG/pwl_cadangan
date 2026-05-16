@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Kasir;
 
 use App\Http\Controllers\Controller;
 use App\Models\KasirShift;
+use App\Models\ShiftSchedule;
 use Illuminate\Http\Request;
 
 class ShiftController extends Controller
@@ -42,6 +43,16 @@ class ShiftController extends Controller
             return back()->with('error', 'Kamu sudah memiliki shift aktif hari ini!');
         }
 
+        $scheduled = ShiftSchedule::where('user_id', auth()->id())
+            ->where('branch_id', auth()->user()->branch_id)
+            ->whereDate('shift_date', today())
+            ->where('shift', $request->shift)
+            ->exists();
+
+        if (!$scheduled) {
+            return back()->with('error', 'Kamu belum dijadwalkan untuk shift ini hari ini!');
+        }
+
         KasirShift::create([
             'user_id'    => auth()->id(),
             'branch_id'  => auth()->user()->branch_id,
@@ -58,6 +69,10 @@ class ShiftController extends Controller
     public function clockOut(KasirShift $shift)
     {
         if ($shift->user_id !== auth()->id()) abort(403);
+
+        if ($shift->status !== 'active') {
+            return back()->with('error', 'Shift ini sudah selesai.');
+        }
 
         $shift->update([
             'clock_out' => now()->format('H:i:s'),

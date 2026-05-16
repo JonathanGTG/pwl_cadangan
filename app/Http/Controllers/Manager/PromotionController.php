@@ -38,6 +38,11 @@ class PromotionController extends Controller
             'end_date'       => 'required|date|after_or_equal:start_date',
         ]);
 
+        if ($request->discount_type === 'percentage' && $request->discount_value > 100) {
+            return back()->withErrors(['discount_value' => 'Diskon persentase tidak boleh lebih dari 100%'])
+                ->withInput();
+        }
+
         Promotion::create([
             'branch_id'      => null,           // null = global
             'created_by'     => auth()->id(),
@@ -72,6 +77,11 @@ class PromotionController extends Controller
             'start_date'     => 'required|date',
             'end_date'       => 'required|date|after_or_equal:start_date',
         ]);
+
+        if ($request->discount_type === 'percentage' && $request->discount_value > 100) {
+            return back()->withErrors(['discount_value' => 'Diskon persentase tidak boleh lebih dari 100%'])
+                ->withInput();
+        }
 
         $promotion->update([
             'name'           => $request->name,
