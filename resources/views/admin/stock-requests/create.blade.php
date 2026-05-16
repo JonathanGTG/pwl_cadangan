@@ -87,7 +87,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Bahan Baku <span class="text-red-500">*</span>
                     </label>
-                    <select name="item_name" id="selectBahan"
+                    <select name="item_name_bahan" id="selectBahan"
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white"
                         onchange="updateSatuanFromBahan()">
                         <option value="">— Pilih Bahan Baku —</option>

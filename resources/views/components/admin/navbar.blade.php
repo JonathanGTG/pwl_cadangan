@@ -17,7 +17,7 @@
                     $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
                                     ->where('status', 'pending')->latest()->take(3)->get();
                     $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                    ->where('status', 'pending')
+                                    ->where('status', 'completed')
                                     ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
                                     ->latest()->take(3)->get();
                     $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
@@ -43,7 +43,7 @@
                         $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
                                         ->where('status', 'pending')->latest()->take(3)->get();
                         $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                        ->where('status', 'pending')
+                                        ->where('status', 'completed')
                                         ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
                                         ->latest()->take(3)->get();
                         $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
@@ -143,12 +143,23 @@
 function toggleNotif() {
     const dd = document.getElementById('notifDropdown');
     dd.classList.toggle('hidden');
+    document.getElementById('profileDropdown')?.classList.add('hidden');
+}
+
+function toggleProfile() {
+    const dd = document.getElementById('profileDropdown');
+    dd.classList.toggle('hidden');
+    document.getElementById('notifDropdown')?.classList.add('hidden');
 }
 // Tutup jika klik di luar
 document.addEventListener('click', function(e) {
-    const wrapper = document.getElementById('notifWrapper');
-    if (wrapper && !wrapper.contains(e.target)) {
+    const notifWrapper = document.getElementById('notifWrapper');
+    const profileWrapper = document.getElementById('profileWrapper');
+    if (notifWrapper && !notifWrapper.contains(e.target)) {
         document.getElementById('notifDropdown')?.classList.add('hidden');
+    }
+    if (profileWrapper && !profileWrapper.contains(e.target)) {
+        document.getElementById('profileDropdown')?.classList.add('hidden');
     }
 });
 </script>

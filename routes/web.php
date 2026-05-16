@@ -59,7 +59,7 @@ Route::middleware(['auth', 'role:manager'])
             ->name('branches.add-kasir');
 
         // Menu
-        Route::resource('menus', MenuController::class);
+        Route::resource('menus', MenuController::class)->except(['show']);
         Route::post('menus/{id}/restore', [MenuController::class, 'restore'])
              ->name('menus.restore');
 

@@ -14,12 +14,12 @@ class BranchStock extends Model
     }
 
     public function menu() {
-        return $this->belongsTo(Menu::class);
+        return $this->belongsTo(Menu::class)->withTrashed();
     }
 
     // Harga efektif: custom_price jika ada, fallback ke base_price menu
     public function getEffectivePriceAttribute(): float
     {
-        return $this->custom_price ?? $this->menu->base_price;
+        return $this->custom_price ?? $this->menu?->base_price ?? 0;
     }
 }

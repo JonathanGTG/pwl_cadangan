@@ -16,11 +16,10 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h2 class="text-xl font-display font-bold text-gray-800">Riwayat Transaksi</h2>
-        <p class="text-sm text-gray-500 mt-1">Monitor & kelola transaksi cabang</p>
+        <p class="text-sm text-gray-500 mt-1">Monitor dan kelola transaksi cabang</p>
     </div>
 </div>
 
-{{-- Filter --}}
 <div class="bg-white rounded-2xl shadow-soft p-4 mb-6">
     <form method="GET" class="flex gap-4 items-end">
         <div>
@@ -48,13 +47,10 @@
     </form>
 </div>
 
-{{-- Summary --}}
 <div class="grid grid-cols-3 gap-4 mb-6">
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Total Pemasukan</p>
-        <p class="text-xl font-bold text-emerald-600">
-            Rp {{ number_format($summary['total_income'], 0, ',', '.') }}
-        </p>
+        <p class="text-xl font-bold text-emerald-600">Rp {{ number_format($summary['total_income'], 0, ',', '.') }}</p>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Transaksi Selesai</p>
@@ -66,7 +62,6 @@
     </div>
 </div>
 
-{{-- Tabel --}}
 <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
     <table class="w-full text-left">
         <thead>
@@ -82,17 +77,19 @@
         </thead>
         <tbody>
             @forelse($transactions as $trx)
+            @php
+                $isRequestCancel = str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]');
+                $canCancel = $trx->status === 'pending' || ($trx->status === 'completed' && $isRequestCancel);
+            @endphp
             <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                 <td class="py-4 px-6">
                     <p class="text-sm font-semibold text-gray-800">{{ $trx->invoice_number }}</p>
                     <p class="text-xs text-gray-400">{{ $trx->created_at->format('d M Y, H:i') }}</p>
                 </td>
-                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->kasir->name }}</td>
+                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->kasir->name ?? '-' }}</td>
                 <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->items->count() }} item</td>
-                <td class="py-4 px-6">
-                    <span class="text-sm font-bold text-emerald-600">
-                        Rp {{ number_format($trx->total, 0, ',', '.') }}
-                    </span>
+                <td class="py-4 px-6 text-sm font-bold text-emerald-600">
+                    Rp {{ number_format($trx->total, 0, ',', '.') }}
                 </td>
                 <td class="py-4 px-6">
                     <span class="text-xs px-2 py-1 rounded-lg bg-gray-100 text-gray-600 capitalize font-medium">
@@ -100,38 +97,30 @@
                     </span>
                 </td>
                 <td class="py-4 px-6">
-                    @php
-                    $isRequestCancel = str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]');
-                    $canCancel = $trx->status === 'pending' ||
-                                ($trx->status === 'completed' && $isRequestCancel);
-                @endphp
-
-                {{-- Kolom Status --}}
-                <td class="py-4 px-6">
                     @if($isRequestCancel && $trx->status === 'completed')
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Minta Batal</span>
-                        @php $reason = str_replace('[REQUEST CANCEL] ', '', $trx->cancel_reason); @endphp
-                        <p class="text-xs text-gray-400 italic mt-1">"{{ $reason }}"</p>
+                        <p class="text-xs text-gray-400 italic mt-1">"{{ str_replace('[REQUEST CANCEL] ', '', $trx->cancel_reason) }}"</p>
                     @elseif($trx->status === 'completed')
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Selesai</span>
                     @elseif($trx->status === 'cancelled')
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Dibatalkan</span>
-                    @elseif($trx->status === 'pending')
+                    @else
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
                     @endif
                 </td>
-
-                {{-- Kolom Aksi --}}
                 <td class="py-4 px-6">
-                    @if($canCancel)
-                    <button onclick="openCancelModal({{ $trx->id }})"
-                        class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
-                        <i class="ph ph-x-circle"></i>
-                        {{ $isRequestCancel ? 'Konfirmasi Batal' : 'Batalkan' }}
-                    </button>
-                    @else
-                    <span class="text-xs text-gray-400">—</span>
-                    @endif
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openDetailModal({{ $trx->id }})"
+                            class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                            <i class="ph ph-eye"></i> Detail
+                        </button>
+                        @if($canCancel)
+                        <button onclick="openCancelModal({{ $trx->id }})"
+                            class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
+                            <i class="ph ph-x-circle"></i> {{ $isRequestCancel ? 'Konfirmasi Batal' : 'Batalkan' }}
+                        </button>
+                        @endif
+                    </div>
                 </td>
             </tr>
             @empty
@@ -146,11 +135,40 @@
     </table>
 </div>
 
-{{-- Modal Batalkan --}}
+<div id="detailModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h3 class="font-display font-bold text-gray-800 text-lg">Detail Pesanan</h3>
+                <p id="detailInvoice" class="text-xs text-gray-400 mt-0.5"></p>
+            </div>
+            <button onclick="document.getElementById('detailModal').classList.add('hidden')"
+                class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div id="detailItems" class="space-y-3 max-h-72 overflow-y-auto mb-5"></div>
+        <div class="border-t border-gray-100 pt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Subtotal</span>
+                <span id="detailSubtotal" class="font-semibold text-gray-800"></span>
+            </div>
+            <div id="detailDiscountRow" class="flex justify-between text-sm hidden">
+                <span class="text-gray-500">Diskon</span>
+                <span id="detailDiscount" class="font-semibold text-red-500"></span>
+            </div>
+            <div class="flex justify-between text-sm font-bold border-t border-gray-100 pt-2 mt-1">
+                <span class="text-gray-800">Total</span>
+                <span id="detailTotal" class="text-elco-coffee text-base"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="cancelModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">
         <h3 class="font-display font-bold text-gray-800 text-lg mb-2">Batalkan Transaksi</h3>
-        <p class="text-sm text-gray-500 mb-2">⚠️ Stok akan dikembalikan otomatis setelah pembatalan.</p>
+        <p class="text-sm text-gray-500 mb-4">Stok akan dikembalikan otomatis setelah pembatalan.</p>
         <form id="cancelForm" method="POST" class="space-y-4">
             @csrf
             <textarea name="cancel_reason" rows="3" required
@@ -163,7 +181,7 @@
                 </button>
                 <button type="submit"
                     class="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 smooth-transition">
-                    Konfirmasi Batalkan
+                    Konfirmasi
                 </button>
             </div>
         </form>
@@ -174,37 +192,55 @@
 
 @push('scripts')
 <script>
+const transactionDetails = @json($transactions->mapWithKeys(fn($trx) => [
+    $trx->id => [
+        'invoice' => $trx->invoice_number,
+        'subtotal' => (float) $trx->subtotal,
+        'discount' => (float) $trx->discount_amount,
+        'total' => (float) $trx->total,
+        'items' => $trx->items->map(fn($item) => [
+            'name' => $item->menu_name,
+            'quantity' => (float) $item->quantity,
+            'price' => (float) $item->price,
+            'subtotal' => (float) $item->subtotal,
+        ])->values(),
+    ],
+]));
+
+const rupiah = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+
+function openDetailModal(id) {
+    const trx = transactionDetails[id];
+    if (!trx) return;
+
+    document.getElementById('detailInvoice').textContent = trx.invoice;
+    document.getElementById('detailSubtotal').textContent = rupiah(trx.subtotal);
+    document.getElementById('detailTotal').textContent = rupiah(trx.total);
+
+    const discountRow = document.getElementById('detailDiscountRow');
+    if (trx.discount > 0) {
+        document.getElementById('detailDiscount').textContent = '- ' + rupiah(trx.discount);
+        discountRow.classList.remove('hidden');
+    } else {
+        discountRow.classList.add('hidden');
+    }
+
+    document.getElementById('detailItems').innerHTML = trx.items.map(item => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+            <div>
+                <p class="text-sm font-semibold text-gray-800">${item.name}</p>
+                <p class="text-xs text-gray-400">${item.quantity} x ${rupiah(item.price)}</p>
+            </div>
+            <span class="text-sm font-bold text-elco-coffee">${rupiah(item.subtotal)}</span>
+        </div>
+    `).join('');
+
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
 function openCancelModal(id) {
     document.getElementById('cancelForm').action = `/admin/transactions/${id}/cancel`;
     document.getElementById('cancelModal').classList.remove('hidden');
 }
-</script>
-<script>
-// Toggle field nama item berdasarkan tipe
-document.querySelectorAll('input[name="type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const isStock = this.value === 'stock';
-        document.getElementById('stockSelect').classList.toggle('hidden', !isStock);
-        document.getElementById('operationalInput').classList.toggle('hidden', isStock);
-
-        // Sync nilai ke field yang aktif
-        document.getElementById('itemNameSelect').required = isStock;
-        document.getElementById('itemNameOps').required    = !isStock;
-    });
-});
-
-// Sebelum submit, satukan nilai item_name
-document.querySelector('form').addEventListener('submit', function(e) {
-    const type = document.querySelector('input[name="type"]:checked')?.value;
-    if (type === 'operational') {
-        // Buat hidden input dengan nama item_name
-        const val = document.getElementById('itemNameOps').value;
-        const hidden = document.createElement('input');
-        hidden.type  = 'hidden';
-        hidden.name  = 'item_name';
-        hidden.value = val;
-        this.appendChild(hidden);
-    }
-});
 </script>
 @endpush

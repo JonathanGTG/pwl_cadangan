@@ -8,7 +8,7 @@ class StockRequest extends Model
 {
     protected $fillable = [
         'branch_id', 'requested_by', 'verified_by',
-        'type', 'item_name', 'unit', 'quantity',
+        'type', 'stock_item_type', 'item_name', 'unit', 'quantity',
         'reason', 'status', 'rejection_note', 'verified_at',
         'delivery_status', 'delivery_note', 'delivery_photo',
         'delivered_at', 'delivered_by',

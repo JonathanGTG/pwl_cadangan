@@ -37,6 +37,11 @@
             {{ request()->routeIs('manager.transactions*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
                 <i class="ph ph-receipt text-xl"></i> Transaksi
             </a>
+            <a href="{{ route('manager.expenses.index') }}"
+            class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+            {{ request()->routeIs('manager.expenses*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
+                <i class="ph ph-money text-xl"></i> Pengeluaran
+            </a>
             <a href="{{ route('manager.reports.index') }}"
             class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
             {{ request()->routeIs('manager.reports*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">

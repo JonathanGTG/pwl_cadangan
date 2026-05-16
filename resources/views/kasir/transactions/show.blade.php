@@ -79,5 +79,54 @@
             </div>
         </div>
     </div>
+
+    @php $isRequestCancel = str_starts_with($transaction->cancel_reason ?? '', '[REQUEST CANCEL]'); @endphp
+    @if($transaction->status === 'completed' && !$isRequestCancel)
+    <button onclick="requestCancel({{ $transaction->id }})"
+        class="mt-4 w-full py-3 rounded-2xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 smooth-transition">
+        <i class="ph ph-x-circle mr-1"></i> Minta Pembatalan Pesanan
+    </button>
+    @elseif($isRequestCancel)
+    <div class="mt-4 bg-orange-50 border border-orange-100 text-orange-700 px-4 py-3 rounded-2xl text-sm">
+        Permintaan pembatalan sudah dikirim dan menunggu admin cabang.
+    </div>
+    @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+async function requestCancel(id) {
+    const { value: reason } = await Swal.fire({
+        title: 'Alasan Pembatalan',
+        input: 'textarea',
+        inputPlaceholder: 'Jelaskan alasan pembatalan...',
+        showCancelButton: true,
+        confirmButtonText: 'Kirim',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#5C3D2E',
+        inputValidator: value => {
+            if (!value || value.length < 5) return 'Alasan minimal 5 karakter!';
+        }
+    });
+
+    if (!reason) return;
+
+    const res = await fetch(`/kasir/transactions/${id}/request-cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ cancel_reason: reason })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+        Swal.fire('Terkirim', data.message, 'success').then(() => location.reload());
+    } else {
+        Swal.fire('Gagal', data.message, 'error');
+    }
+}
+</script>
+@endpush

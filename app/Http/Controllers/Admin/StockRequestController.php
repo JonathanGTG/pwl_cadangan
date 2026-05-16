@@ -38,24 +38,40 @@ class StockRequestController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'type'            => 'required|in:stock,operational',
-            'item_name'       => 'required|string|max:150',
+            'item_name'       => 'nullable|string|max:150',
+            'item_name_bahan' => 'nullable|string|max:150',
+            'item_name_produk' => 'nullable|string|max:150',
+            'item_name_ops'   => 'nullable|string|max:150',
             'unit'            => 'nullable|string|max:20',
             'quantity'        => 'required|numeric|min:1',
             'reason'          => 'nullable|string',
-            'stock_item_type' => 'nullable|in:bahan_baku,produk_jadi',
+            'stock_item_type' => 'required_if:type,stock|nullable|in:bahan_baku,produk_jadi',
         ]);
+
+        $itemName = match ($validated['type']) {
+            'operational' => $validated['item_name_ops'] ?? $validated['item_name'] ?? null,
+            default => ($validated['stock_item_type'] ?? null) === 'produk_jadi'
+                ? ($validated['item_name_produk'] ?? $validated['item_name'] ?? null)
+                : ($validated['item_name_bahan'] ?? $validated['item_name'] ?? null),
+        };
+
+        if (!$itemName) {
+            return back()
+                ->withErrors(['item_name' => 'Nama kebutuhan wajib diisi.'])
+                ->withInput();
+        }
 
         StockRequest::create([
             'branch_id'       => auth()->user()->branch_id,
             'requested_by'    => auth()->id(),
-            'type'            => $request->type,
-            'stock_item_type' => $request->type === 'stock' ? $request->stock_item_type : null,
-            'item_name'       => $request->item_name,
-            'unit'            => $request->unit,
-            'quantity'        => $request->quantity,
-            'reason'          => $request->reason,
+            'type'            => $validated['type'],
+            'stock_item_type' => $validated['type'] === 'stock' ? $validated['stock_item_type'] : null,
+            'item_name'       => $itemName,
+            'unit'            => $validated['unit'] ?? null,
+            'quantity'        => $validated['quantity'],
+            'reason'          => $validated['reason'] ?? null,
             'status'          => 'pending',
         ]);
 

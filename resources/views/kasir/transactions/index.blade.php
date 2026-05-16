@@ -223,7 +223,7 @@
                     <td class="py-3 px-5">
                         <div class="flex gap-2">
                             {{-- Selesaikan --}}
-                            @if($trx->status === 'pending' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
+                            @if($trx->status === 'completed' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
                                 <button onclick="requestCancel({{ $trx->id }})"
                                     class="text-xs font-medium text-orange-500 bg-orange-50 px-3 py-1.5 rounded-xl hover:bg-orange-100 smooth-transition">
                                     <i class="ph ph-x-circle"></i> Minta Batal

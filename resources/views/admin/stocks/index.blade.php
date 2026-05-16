@@ -17,7 +17,7 @@
 <div class="grid grid-cols-3 gap-4 mb-6">
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Total Item</p>
-        <p class="text-2xl font-bold text-gray-800">{{ $stocks->count() }}</p>
+        <p class="text-2xl font-bold text-gray-800">{{ $stocks->count() + $ingredientStocks->count() }}</p>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Stok Normal</p>
@@ -43,6 +43,7 @@
         </thead>
         <tbody>
             @forelse($stocks as $stock)
+            @continue(!$stock->menu)
             <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-3">
@@ -88,6 +89,58 @@
                 <td colspan="5" class="py-12 text-center text-gray-400">
                     <i class="ph ph-package text-4xl block mb-2"></i>
                     Belum ada stok di cabang ini
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+{{-- Tabel Stok Bahan Baku --}}
+<div class="bg-white rounded-3xl shadow-soft overflow-hidden mt-6">
+    <div class="p-6 border-b border-gray-100">
+        <h3 class="font-display font-semibold text-gray-800">Stok Bahan Baku</h3>
+        <p class="text-xs text-gray-400 mt-1">Dipakai untuk menu minuman</p>
+    </div>
+    <table class="w-full text-left">
+        <thead>
+            <tr class="text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
+                <th class="py-4 px-6 font-medium">Bahan</th>
+                <th class="py-4 px-6 font-medium">Kategori</th>
+                <th class="py-4 px-6 font-medium">Stok</th>
+                <th class="py-4 px-6 font-medium">Minimum</th>
+                <th class="py-4 px-6 font-medium">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($ingredientStocks as $stock)
+            @continue(!$stock->ingredient)
+            <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
+                <td class="py-4 px-6 text-sm font-semibold text-gray-800">
+                    {{ $stock->ingredient->nama_bahan }}
+                </td>
+                <td class="py-4 px-6 text-sm text-gray-600">
+                    {{ $stock->ingredient->kategori ?? '-' }}
+                </td>
+                <td class="py-4 px-6 text-sm font-bold text-elco-coffee">
+                    {{ number_format($stock->stok_sekarang, 2, ',', '.') }} {{ $stock->ingredient->satuan }}
+                </td>
+                <td class="py-4 px-6 text-sm text-gray-600">
+                    {{ number_format($stock->stok_minimum, 2, ',', '.') }} {{ $stock->ingredient->satuan }}
+                </td>
+                <td class="py-4 px-6">
+                    @if($stock->stok_sekarang <= $stock->stok_minimum)
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-600">Perlu Restock</span>
+                    @else
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600">Normal</span>
+                    @endif
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="5" class="py-12 text-center text-gray-400">
+                    <i class="ph ph-flask text-4xl block mb-2"></i>
+                    Belum ada stok bahan baku di cabang ini
                 </td>
             </tr>
             @endforelse
