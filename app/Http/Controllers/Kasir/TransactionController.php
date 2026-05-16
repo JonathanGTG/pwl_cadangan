@@ -86,6 +86,10 @@ class TransactionController extends Controller
                     $branchStock = BranchStock::with(['menu.ingredients.ingredient'])
                         ->findOrFail($item['menu_stock_id']);
 
+                    if ((int) $branchStock->branch_id !== (int) $branchId) {
+                        throw new \Exception('Menu tidak tersedia untuk cabang ini.');
+                    }
+
                     $menu = $branchStock->menu;
                     $qty  = $item['quantity'];
 

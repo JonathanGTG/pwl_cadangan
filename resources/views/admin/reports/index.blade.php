@@ -180,6 +180,7 @@
                     <th class="py-3 px-6 font-medium">Item</th>
                     <th class="py-3 px-6 font-medium">Total</th>
                     <th class="py-3 px-6 font-medium">Tanggal</th>
+                    <th class="py-3 px-6 font-medium">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -196,10 +197,16 @@
                     <td class="py-3 px-6 text-sm text-gray-500">
                         {{ $trx->created_at->format('d M Y H:i') }}
                     </td>
+                    <td class="py-3 px-6">
+                        <button onclick="openReportTransactionDetail({{ $trx->id }})"
+                            class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                            <i class="ph ph-eye"></i> Detail
+                        </button>
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="py-10 text-center text-gray-400">
+                    <td colspan="6" class="py-10 text-center text-gray-400">
                         Belum ada transaksi bulan ini
                     </td>
                 </tr>
@@ -209,8 +216,53 @@
     </div>
 </div>
 
-@endsection
+<div id="reportTransactionDetailModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h3 class="font-display font-bold text-gray-800 text-lg">Detail Transaksi</h3>
+                <p id="reportDetailInvoice" class="text-xs text-gray-400 mt-0.5"></p>
+            </div>
+            <button onclick="document.getElementById('reportTransactionDetailModal').classList.add('hidden')"
+                class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div id="reportDetailItems" class="space-y-3 max-h-72 overflow-y-auto mb-5"></div>
+        <div class="border-t border-gray-100 pt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Subtotal</span>
+                <span id="reportDetailSubtotal" class="font-semibold text-gray-800"></span>
+            </div>
+            <div id="reportDetailDiscountRow" class="flex justify-between text-sm hidden">
+                <span class="text-gray-500">Diskon</span>
+                <span id="reportDetailDiscount" class="font-semibold text-red-500"></span>
+            </div>
+            <div class="flex justify-between text-sm font-bold border-t border-gray-100 pt-2 mt-1">
+                <span class="text-gray-800">Total</span>
+                <span id="reportDetailTotal" class="text-elco-coffee text-base"></span>
+            </div>
+        </div>
+    </div>
+</div>
 
+@endsection
+@php
+    $reportTransactionMap = $transactions->mapWithKeys(fn($trx) => [
+        $trx->id => [
+            'invoice'  => $trx->invoice_number,
+            'subtotal' => (float) $trx->subtotal,
+            'discount' => (float) $trx->discount_amount,
+            'total'    => (float) $trx->total,
+            'items'    => $trx->items->map(fn($item) => [
+                'name'     => $item->menu_name,
+                'quantity' => (float) $item->quantity,
+                'price'    => (float) $item->price,
+                'subtotal' => (float) $item->subtotal,
+            ])->values(),
+        ],
+    ]);
+@endphp
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -333,5 +385,38 @@ new Chart(document.getElementById('profitChart'), {
         }
     }
 });
+</script>
+<script>
+const reportTransactionDetails = @json($reportTransactionMap);
+const reportRupiah = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+
+function openReportTransactionDetail(id) {
+    const trx = reportTransactionDetails[id];
+    if (!trx) return;
+
+    document.getElementById('reportDetailInvoice').textContent = trx.invoice;
+    document.getElementById('reportDetailSubtotal').textContent = reportRupiah(trx.subtotal);
+    document.getElementById('reportDetailTotal').textContent = reportRupiah(trx.total);
+
+    const discountRow = document.getElementById('reportDetailDiscountRow');
+    if (trx.discount > 0) {
+        document.getElementById('reportDetailDiscount').textContent = '- ' + reportRupiah(trx.discount);
+        discountRow.classList.remove('hidden');
+    } else {
+        discountRow.classList.add('hidden');
+    }
+
+    document.getElementById('reportDetailItems').innerHTML = trx.items.map(item => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+            <div>
+                <p class="text-sm font-semibold text-gray-800">${item.name}</p>
+                <p class="text-xs text-gray-400">${item.quantity} x ${reportRupiah(item.price)}</p>
+            </div>
+            <span class="text-sm font-bold text-elco-coffee">${reportRupiah(item.subtotal)}</span>
+        </div>
+    `).join('');
+
+    document.getElementById('reportTransactionDetailModal').classList.remove('hidden');
+}
 </script>
 @endpush

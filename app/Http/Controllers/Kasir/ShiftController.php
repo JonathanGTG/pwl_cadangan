@@ -15,7 +15,6 @@ class ShiftController extends Controller
 
         $activeShift = KasirShift::where('user_id', $userId)
                                   ->where('status', 'active')
-                                  ->whereDate('shift_date', today())
                                   ->first();
 
         $shiftHistory = KasirShift::where('user_id', $userId)
@@ -35,11 +34,19 @@ class ShiftController extends Controller
 
         $existing = KasirShift::where('user_id', auth()->id())
                                ->where('status', 'active')
-                               ->whereDate('shift_date', today())
                                ->first();
 
         if ($existing) {
             return back()->with('error', 'Kamu sudah memiliki shift aktif hari ini!');
+        }
+
+        if (! $this->isWithinShiftTime($request->shift)) {
+            $range = $this->shiftRanges()[$request->shift];
+
+            return back()->with(
+                'error',
+                "Shift {$request->shift} hanya bisa dimulai pada jam {$range['start']} - {$range['end']}."
+            );
         }
 
         KasirShift::create([
@@ -65,5 +72,26 @@ class ShiftController extends Controller
         ]);
 
         return back()->with('success', 'Shift selesai! Terima kasih atas kerja kerasmu ☕');
+    }
+
+    private function isWithinShiftTime(string $shift): bool
+    {
+        $range = $this->shiftRanges()[$shift];
+        $now = now()->format('H:i');
+
+        if ($range['end'] < $range['start']) {
+            return $now >= $range['start'] || $now < $range['end'];
+        }
+
+        return $now >= $range['start'] && $now < $range['end'];
+    }
+
+    private function shiftRanges(): array
+    {
+        return [
+            'pagi' => ['start' => '07:00', 'end' => '15:00'],
+            'siang' => ['start' => '15:00', 'end' => '22:00'],
+            'malam' => ['start' => '22:00', 'end' => '07:00'],
+        ];
     }
 }

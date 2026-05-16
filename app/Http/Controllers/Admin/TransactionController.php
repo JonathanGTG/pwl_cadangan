@@ -88,4 +88,24 @@ class TransactionController extends Controller
 
         return back()->with('success', 'Transaksi berhasil dibatalkan dan stok dikembalikan!');
     }
+
+    public function rejectCancel(Transaction $transaction)
+    {
+        if ($transaction->branch_id !== auth()->user()->branch_id) {
+            abort(403);
+        }
+
+        $isRequestCancel = $transaction->status === 'completed' &&
+            str_starts_with($transaction->cancel_reason ?? '', '[REQUEST CANCEL]');
+
+        if (!$isRequestCancel) {
+            return back()->with('error', 'Permintaan pembatalan tidak ditemukan!');
+        }
+
+        $transaction->update([
+            'cancel_reason' => null,
+        ]);
+
+        return back()->with('success', 'Permintaan pembatalan ditolak. Transaksi tetap selesai.');
+    }
 }

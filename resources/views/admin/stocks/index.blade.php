@@ -2,6 +2,21 @@
 
 @section('content')
 
+@php
+    $branchId = auth()->user()->branch_id;
+    $stockRows = $stocks->filter(fn ($stock) => $stock->menu);
+    $normalCount = $stockRows->filter(function ($stock) use ($branchId) {
+        return $stock->menu->isIngredientBased()
+            ? $stock->menu->checkIngredients($branchId, 1)['ok']
+            : $stock->stock > 5;
+    })->count();
+    $criticalCount = $stockRows->filter(function ($stock) use ($branchId) {
+        return $stock->menu->isIngredientBased()
+            ? ! $stock->menu->checkIngredients($branchId, 1)['ok']
+            : $stock->stock <= 5;
+    })->count();
+@endphp
+
 <div class="flex items-center justify-between mb-6">
     <div>
         <h2 class="text-xl font-display font-bold text-gray-800">Stok Cabang</h2>
@@ -21,11 +36,11 @@
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Stok Normal</p>
-        <p class="text-2xl font-bold text-emerald-600">{{ $stocks->where('stock', '>', 5)->count() }}</p>
+        <p class="text-2xl font-bold text-emerald-600">{{ $normalCount }}</p>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-soft">
         <p class="text-xs text-gray-500 mb-1">Stok Kritis (≤5)</p>
-        <p class="text-2xl font-bold text-red-500">{{ $stocks->where('stock', '<=', 5)->count() }}</p>
+        <p class="text-2xl font-bold text-red-500">{{ $criticalCount }}</p>
     </div>
 </div>
 
@@ -44,6 +59,12 @@
         <tbody>
             @forelse($stocks as $stock)
             @continue(!$stock->menu)
+            @php
+                $isIngredientBased = $stock->menu->isIngredientBased();
+                $ingredientCheck = $isIngredientBased ? $stock->menu->checkIngredients($branchId, 1) : null;
+                $isAvailable = $isIngredientBased ? $ingredientCheck['ok'] : $stock->stock > 0;
+                $isCritical = $isIngredientBased ? ! $isAvailable : ($stock->stock > 0 && $stock->stock <= 5);
+            @endphp
             <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-3">
@@ -66,18 +87,24 @@
                     </span>
                 </td>
                 <td class="py-4 px-6">
-                    <span class="text-sm font-bold
-                        {{ $stock->stock <= 0 ? 'text-red-500' : ($stock->stock <= 5 ? 'text-yellow-600' : 'text-gray-800') }}">
-                        {{ $stock->stock }}
-                    </span>
+                    @if($isIngredientBased)
+                        <span class="text-sm font-bold {{ $isAvailable ? 'text-emerald-600' : 'text-red-500' }}">
+                            {{ $isAvailable ? 'Bahan tersedia' : 'Bahan kurang' }}
+                        </span>
+                    @else
+                        <span class="text-sm font-bold
+                            {{ $stock->stock <= 0 ? 'text-red-500' : ($stock->stock <= 5 ? 'text-yellow-600' : 'text-gray-800') }}">
+                            {{ $stock->stock }}
+                        </span>
+                    @endif
                 </td>
                 <td class="py-4 px-6 text-sm font-semibold text-elco-coffee">
                     Rp {{ number_format($stock->custom_price ?? $stock->menu->base_price, 0, ',', '.') }}
                 </td>
                 <td class="py-4 px-6">
-                    @if($stock->stock <= 0)
+                    @if(!$isAvailable)
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Habis</span>
-                    @elseif($stock->stock <= 5)
+                    @elseif($isCritical)
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-600">Kritis</span>
                     @else
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600">Normal</span>

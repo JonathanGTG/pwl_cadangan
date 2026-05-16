@@ -131,7 +131,7 @@
                 </div>
             </div>
             @if($data['low_stocks'] > 0)
-            <a href="#" class="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-hover smooth-transition active:scale-95">
+            <a href="{{ route('admin.stock-requests.create') }}" class="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-hover smooth-transition active:scale-95">
                 <i class="ph ph-arrow-circle-up"></i> Ajukan Pengisian Stok
             </a>
             @endif

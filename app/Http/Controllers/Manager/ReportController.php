@@ -96,11 +96,19 @@ class ReportController extends Controller
 
         $branches = Branch::where('status', 'active')->get();
 
+        $transactions = Transaction::where('status', 'completed')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->with('branch', 'kasir', 'items', 'promotion')
+            ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
+            ->latest()
+            ->get();
+
         return view('manager.reports.index', compact(
             'month', 'year', 'branchId', 'branches',
             'labels', 'incomeChart', 'expenseChart',
             'totalIncome', 'totalExpense', 'totalProfit', 'totalTransaction',
-            'branchPerformance'
+            'branchPerformance', 'transactions'
         ));
     }
 }

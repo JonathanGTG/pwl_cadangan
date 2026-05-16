@@ -12,7 +12,7 @@ class StockController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $stocks = BranchStock::with('menu')
+        $stocks = BranchStock::with(['menu.ingredients.ingredient'])
                              ->where('branch_id', $branchId)
                              ->latest()
                              ->get();

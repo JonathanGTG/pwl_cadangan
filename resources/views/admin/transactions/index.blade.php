@@ -120,6 +120,15 @@
                             <i class="ph ph-x-circle"></i> {{ $isRequestCancel ? 'Konfirmasi Batal' : 'Batalkan' }}
                         </button>
                         @endif
+                        @if($isRequestCancel && $trx->status === 'completed')
+                        <form id="reject-cancel-{{ $trx->id }}" action="{{ route('admin.transactions.reject-cancel', $trx) }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
+                        <button onclick="rejectCancelRequest({{ $trx->id }})"
+                            class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
+                            <i class="ph ph-check-circle"></i> Tolak Batal
+                        </button>
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -177,7 +186,7 @@
             <div class="flex gap-3">
                 <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')"
                     class="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
-                    Batal
+                    Tutup
                 </button>
                 <button type="submit"
                     class="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 smooth-transition">
@@ -205,7 +214,6 @@
         ],
     ]);
 @endphp
-
 @push('scripts')
 <script>
 const transactionDetails = @json($transactionMap);
@@ -244,6 +252,17 @@ function openDetailModal(id) {
 function openCancelModal(id) {
     document.getElementById('cancelForm').action = `/admin/transactions/${id}/cancel`;
     document.getElementById('cancelModal').classList.remove('hidden');
+}
+
+function rejectCancelRequest(id) {
+    elcoConfirm({
+        title: 'Tolak Pembatalan?',
+        text: 'Transaksi akan tetap berstatus selesai.',
+        confirmText: 'Tolak Request',
+        confirmColor: '#10b981',
+        icon: 'question',
+        onConfirm: () => document.getElementById(`reject-cancel-${id}`).submit()
+    });
 }
 </script>
 @endpush

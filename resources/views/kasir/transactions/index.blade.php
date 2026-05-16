@@ -35,9 +35,13 @@
         {{-- Grid Menu --}}
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="menuGrid">
             @forelse($stocks as $stock)
+            @php
+                $isIngredientBased = $stock->menu->isIngredientBased();
+                $cartLimit = $isIngredientBased ? 999 : (int) $stock->stock;
+            @endphp
             <div class="menu-item bg-white rounded-2xl shadow-soft overflow-hidden cursor-pointer smooth-transition hover:-translate-y-1 hover:shadow-hover active:scale-95"
                  data-category="{{ $stock->menu->category }}"
-                 onclick="addToCart({{ $stock->id }}, '{{ addslashes($stock->menu->name) }}', {{ $stock->custom_price ?? $stock->menu->base_price }}, {{ $stock->stock }})">
+                 onclick="addToCart({{ $stock->id }}, '{{ addslashes($stock->menu->name) }}', {{ $stock->custom_price ?? $stock->menu->base_price }}, {{ $cartLimit }}, {{ $isIngredientBased ? 'true' : 'false' }})">
 
                 {{-- Gambar --}}
                 <div class="h-32 bg-gradient-to-br from-elco-cream to-orange-50 relative">
@@ -50,7 +54,7 @@
                         </div>
                     @endif
                     <span class="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm text-xs font-semibold text-gray-600 px-2 py-0.5 rounded-lg">
-                        Stok: {{ $stock->stock }}
+                        {{ $isIngredientBased ? 'Bahan tersedia' : 'Stok: '.$stock->stock }}
                     </span>
                 </div>
 
@@ -293,9 +297,15 @@ let cart = {};
 const rupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 
 // ── Tambah ke Keranjang ──────────────────────────────────
-function addToCart(stockId, name, price, maxStock) {
+function addToCart(stockId, name, price, maxStock, ingredientBased = false) {
+    maxStock = parseInt(maxStock);
+    if (!ingredientBased && maxStock <= 0) {
+        elcoError('Stok Habis', `Stok ${name} kosong`);
+        return;
+    }
+
     if (cart[stockId]) {
-        if (cart[stockId].qty >= maxStock) {
+        if (!cart[stockId].ingredientBased && cart[stockId].qty >= maxStock) {
             elcoError('Stok Habis', `Stok ${name} hanya tersisa ${maxStock}`);
             return;
         }
@@ -306,7 +316,8 @@ function addToCart(stockId, name, price, maxStock) {
             name,
             price: parseFloat(price),
             qty: 1,
-            maxStock: parseInt(maxStock)
+            maxStock,
+            ingredientBased
         };
     }
     renderCart();
@@ -357,7 +368,7 @@ function changeQty(id, delta) {
     if (!cart[id]) return;
     cart[id].qty += delta;
     if (cart[id].qty <= 0) delete cart[id];
-    else if (cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
+    else if (!cart[id].ingredientBased && cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
     renderCart();
 }
 

@@ -105,6 +105,26 @@
                     </button>
                 </div>
                 @endif
+
+                <div class="pt-2 {{ $promo->review_status === 'pending' ? '' : 'border-t border-gray-100' }}">
+                    <form id="del-branch-promo-{{ $promo->id }}"
+                          action="{{ route('manager.promotions.destroy', $promo) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button"
+                            onclick="elcoConfirm({
+                                title: 'Hapus Promo Cabang?',
+                                text: 'Promo {{ addslashes($promo->name) }} dari cabang {{ addslashes($promo->branch->name ?? '-') }} akan dihapus.',
+                                confirmText: 'Hapus',
+                                confirmColor: '#ef4444',
+                                icon: 'warning',
+                                onConfirm: () => document.getElementById('del-branch-promo-{{ $promo->id }}').submit()
+                            })"
+                            class="w-full text-xs font-medium text-red-500 bg-red-50 py-2 rounded-xl hover:bg-red-100 smooth-transition">
+                            <i class="ph ph-trash"></i> Hapus Promo Cabang
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
         @empty

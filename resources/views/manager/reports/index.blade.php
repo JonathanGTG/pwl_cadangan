@@ -190,30 +190,29 @@
                     <th class="py-3 px-6 font-medium">Total</th>
                     <th class="py-3 px-6 font-medium">Metode</th>
                     <th class="py-3 px-6 font-medium">Waktu</th>
+                    <th class="py-3 px-6 font-medium">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $incomeQuery = \App\Models\Transaction::where('status', 'completed')
-                        ->whereMonth('created_at', $month)
-                        ->whereYear('created_at', $year)
-                        ->with('branch', 'kasir');
-                    if ($branchId) $incomeQuery->where('branch_id', $branchId);
-                    $incomeList = $incomeQuery->latest()->take(20)->get();
-                @endphp
-                @forelse($incomeList as $trx)
+                @forelse($transactions->take(20) as $trx)
                 <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                     <td class="py-3 px-6 text-sm font-semibold text-gray-800">{{ $trx->invoice_number }}</td>
-                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->branch->name }}</td>
-                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->kasir->name }}</td>
+                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->branch?->name ?? '-' }}</td>
+                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->kasir?->name ?? '-' }}</td>
                     <td class="py-3 px-6 text-sm font-bold text-emerald-600">
                         Rp {{ number_format($trx->total, 0, ',', '.') }}
                     </td>
                     <td class="py-3 px-6 text-xs font-medium uppercase text-gray-500">{{ $trx->payment_method }}</td>
                     <td class="py-3 px-6 text-xs text-gray-500">{{ $trx->created_at->format('d M Y H:i') }}</td>
+                    <td class="py-3 px-6">
+                        <button onclick="openTransactionDetail({{ $trx->id }})"
+                            class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                            <i class="ph ph-eye"></i> Detail
+                        </button>
+                    </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="py-8 text-center text-gray-400">Belum ada pemasukan</td></tr>
+                <tr><td colspan="7" class="py-8 text-center text-gray-400">Belum ada pemasukan</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -271,9 +270,60 @@
         </table>
     </div>
 </div>
-@endsection
 
+<div id="transactionDetailModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h3 class="font-display font-bold text-gray-800 text-lg">Detail Transaksi</h3>
+                <p id="detailInvoice" class="text-xs text-gray-400 mt-0.5"></p>
+            </div>
+            <button onclick="document.getElementById('transactionDetailModal').classList.add('hidden')"
+                class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div id="detailMeta" class="grid grid-cols-2 gap-3 mb-4 text-xs"></div>
+        <div id="detailItems" class="space-y-3 max-h-72 overflow-y-auto mb-5"></div>
+        <div class="border-t border-gray-100 pt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Subtotal</span>
+                <span id="detailSubtotal" class="font-semibold text-gray-800"></span>
+            </div>
+            <div id="detailDiscountRow" class="flex justify-between text-sm hidden">
+                <span class="text-gray-500">Diskon</span>
+                <span id="detailDiscount" class="font-semibold text-red-500"></span>
+            </div>
+            <div class="flex justify-between text-sm font-bold border-t border-gray-100 pt-2 mt-1">
+                <span class="text-gray-800">Total</span>
+                <span id="detailTotal" class="text-elco-coffee text-base"></span>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+@php
+    $transactionMap = $transactions->mapWithKeys(fn($trx) => [
+        $trx->id => [
+            'invoice'  => $trx->invoice_number,
+            'branch'   => $trx->branch?->name ?? '-',
+            'kasir'    => $trx->kasir?->name ?? '-',
+            'method'   => strtoupper($trx->payment_method),
+            'time'     => $trx->created_at->format('d M Y H:i'),
+            'subtotal' => (float) $trx->subtotal,
+            'discount' => (float) $trx->discount_amount,
+            'total'    => (float) $trx->total,
+            'items'    => $trx->items->map(fn($item) => [
+                'name'     => $item->menu_name,
+                'quantity' => (float) $item->quantity,
+                'price'    => (float) $item->price,
+                'subtotal' => (float) $item->subtotal,
+            ])->values(),
+        ],
+    ]);
+@endphp
 @push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const labels   = @json($labels);
@@ -374,6 +424,45 @@ new Chart(document.getElementById('profitChart'), {
         }
     }
 });
+</script>
+<script>
+const transactionDetails = @json($transactionMap);
+const detailRupiah = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+
+function openTransactionDetail(id) {
+    const trx = transactionDetails[id];
+    if (!trx) return;
+
+    document.getElementById('detailInvoice').textContent = trx.invoice;
+    document.getElementById('detailMeta').innerHTML = `
+        <div class="bg-gray-50 rounded-2xl p-3"><p class="text-gray-400">Cabang</p><p class="font-semibold text-gray-700">${trx.branch}</p></div>
+        <div class="bg-gray-50 rounded-2xl p-3"><p class="text-gray-400">Kasir</p><p class="font-semibold text-gray-700">${trx.kasir}</p></div>
+        <div class="bg-gray-50 rounded-2xl p-3"><p class="text-gray-400">Metode</p><p class="font-semibold text-gray-700">${trx.method}</p></div>
+        <div class="bg-gray-50 rounded-2xl p-3"><p class="text-gray-400">Waktu</p><p class="font-semibold text-gray-700">${trx.time}</p></div>
+    `;
+    document.getElementById('detailSubtotal').textContent = detailRupiah(trx.subtotal);
+    document.getElementById('detailTotal').textContent = detailRupiah(trx.total);
+
+    const discountRow = document.getElementById('detailDiscountRow');
+    if (trx.discount > 0) {
+        document.getElementById('detailDiscount').textContent = '- ' + detailRupiah(trx.discount);
+        discountRow.classList.remove('hidden');
+    } else {
+        discountRow.classList.add('hidden');
+    }
+
+    document.getElementById('detailItems').innerHTML = trx.items.map(item => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+            <div>
+                <p class="text-sm font-semibold text-gray-800">${item.name}</p>
+                <p class="text-xs text-gray-400">${item.quantity} x ${detailRupiah(item.price)}</p>
+            </div>
+            <span class="text-sm font-bold text-elco-coffee">${detailRupiah(item.subtotal)}</span>
+        </div>
+    `).join('');
+
+    document.getElementById('transactionDetailModal').classList.remove('hidden');
+}
 </script>
 <script>
 // Toggle field nama item berdasarkan tipe

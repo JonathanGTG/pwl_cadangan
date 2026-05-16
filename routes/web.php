@@ -123,6 +123,8 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('transactions', [AdminTransaction::class, 'index'])->name('transactions.index');
         Route::post('transactions/{transaction}/cancel', [AdminTransaction::class, 'cancel'])
              ->name('transactions.cancel');
+        Route::post('transactions/{transaction}/reject-cancel', [AdminTransaction::class, 'rejectCancel'])
+             ->name('transactions.reject-cancel');
 
         // Reports
         Route::get('reports', [AdminReport::class, 'index'])->name('reports.index');
