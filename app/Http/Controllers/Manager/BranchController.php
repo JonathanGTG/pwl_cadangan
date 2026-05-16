@@ -12,7 +12,7 @@ class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::with('users')->latest()->get();
+        $branches = Branch::withTrashed()->with('users')->latest()->get();
         return view('manager.branches.index', compact('branches'));
     }
 
@@ -79,9 +79,16 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        $branch->forceDelete();
+        $branch->delete();
         return redirect()->route('manager.branches.index')
-                        ->with('success', 'Cabang berhasil dihapus permanen!');
+                         ->with('success', 'Cabang berhasil dinonaktifkan!');
+    }
+
+    public function restore($id)
+    {
+        Branch::withTrashed()->findOrFail($id)->restore();
+        return redirect()->route('manager.branches.index')
+                         ->with('success', 'Cabang berhasil dipulihkan!');
     }
 
     // Tambah kasir untuk cabang
