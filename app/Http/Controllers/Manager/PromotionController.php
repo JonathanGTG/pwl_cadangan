@@ -10,15 +10,11 @@ class PromotionController extends Controller
 {
     public function index()
     {
-        $globalPromos = Promotion::where('type', 'global')
-                                ->with('createdBy')
-                                ->latest()->get();
+        $promotions = Promotion::with('branch', 'createdBy')
+                               ->latest()
+                               ->get();
 
-        $branchPromos = Promotion::where('type', 'branch')
-                                ->with('branch', 'createdBy')
-                                ->latest()->get();
-
-        return view('manager.promotions.index', compact('globalPromos', 'branchPromos'));
+        return view('manager.promotions.index', compact('promotions'));
     }
 
     public function create()
@@ -96,30 +92,6 @@ class PromotionController extends Controller
 
         return redirect()->route('manager.promotions.index')
                          ->with('success', 'Promo berhasil diperbarui!');
-    }
-
-    public function approvePromo(Promotion $promotion)
-    {
-        $promotion->update([
-            'review_status' => 'approved',
-            'is_active'     => true,
-            'reviewed_by'   => auth()->id(),
-            'reviewed_at'   => now(),
-        ]);
-        return back()->with('success', 'Promo cabang disetujui dan kini aktif!');
-    }
-
-    public function rejectPromo(Request $request, Promotion $promotion)
-    {
-        $request->validate(['review_note' => 'required|string|min:5']);
-        $promotion->update([
-            'review_status' => 'rejected',
-            'is_active'     => false,
-            'review_note'   => $request->review_note,
-            'reviewed_by'   => auth()->id(),
-            'reviewed_at'   => now(),
-        ]);
-        return back()->with('success', 'Promo cabang ditolak!');
     }
 
     public function destroy(Promotion $promotion)

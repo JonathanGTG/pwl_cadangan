@@ -100,20 +100,32 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
+<<<<<<< HEAD
         $branch->update(['status' => 'inactive']);
         $branch->delete();
         return redirect()->route('manager.branches.index')
                         ->with('success', 'Cabang berhasil dinonaktifkan!');
+=======
+        $branch->delete();
+        return redirect()->route('manager.branches.index')
+                         ->with('success', 'Cabang berhasil dinonaktifkan!');
+>>>>>>> 543e73fdda09999701ee2972dad8b0b554fefeef
     }
 
     public function restore($id)
     {
+<<<<<<< HEAD
         $branch = Branch::withTrashed()->findOrFail($id);
         $branch->restore();
         $branch->update(['status' => 'active']);
 
         return redirect()->route('manager.branches.index')
             ->with('success', 'Cabang berhasil dipulihkan!');
+=======
+        Branch::withTrashed()->findOrFail($id)->restore();
+        return redirect()->route('manager.branches.index')
+                         ->with('success', 'Cabang berhasil dipulihkan!');
+>>>>>>> 543e73fdda09999701ee2972dad8b0b554fefeef
     }
 
     // Tambah kasir untuk cabang
