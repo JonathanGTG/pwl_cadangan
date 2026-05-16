@@ -69,10 +69,6 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense)
     {
-        if ($expense->branch_id !== auth()->user()->branch_id) {
-            abort(403);
-        }
-
         if ($expense->status !== 'pending') {
             return back()->with('error', 'Pengeluaran yang sudah diverifikasi tidak dapat dihapus!');
         }

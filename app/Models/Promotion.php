@@ -34,7 +34,6 @@ class Promotion extends Model
     public function getIsValidAttribute(): bool
     {
         return $this->is_active
-            && ($this->review_status ?? 'approved') === 'approved'
             && Carbon::today()->between($this->start_date, $this->end_date);
     }
 
@@ -45,8 +44,7 @@ class Promotion extends Model
         if ($subtotal < $this->min_purchase) return 0;
 
         if ($this->discount_type === 'percentage') {
-            $rate = min((float) $this->discount_value, 100);
-            return round($subtotal * ($rate / 100), 2);
+            return round($subtotal * ($this->discount_value / 100), 2);
         }
 
         return min($this->discount_value, $subtotal);

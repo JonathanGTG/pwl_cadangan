@@ -16,13 +16,10 @@ class DashboardController extends Controller
 
         $data = [
             // Total stok menu di cabang ini
-            'total_stocks'     => BranchStock::where('branch_id', $branchId)
-                                             ->whereHas('menu', fn($q) => $q->where('stock_type', 'kuantitas_jadi'))
-                                             ->count(),
+            'total_stocks'     => BranchStock::where('branch_id', $branchId)->count(),
 
             // Stok yang hampir habis (di bawah 5)
             'low_stocks'       => BranchStock::where('branch_id', $branchId)
-                                             ->whereHas('menu', fn($q) => $q->where('stock_type', 'kuantitas_jadi'))
                                              ->where('stock', '<=', 5)
                                              ->count(),
 

@@ -44,36 +44,18 @@ class StockRequestController extends Controller
             'item_name_bahan' => 'nullable|string|max:150',
             'item_name_produk' => 'nullable|string|max:150',
             'item_name_ops'   => 'nullable|string|max:150',
-            'ingredient_id'   => 'nullable|exists:ingredients,id',
-            'menu_id'         => 'nullable|exists:menus,id',
             'unit'            => 'nullable|string|max:20',
             'quantity'        => 'required|numeric|min:1',
             'reason'          => 'nullable|string',
             'stock_item_type' => 'required_if:type,stock|nullable|in:bahan_baku,produk_jadi',
         ]);
 
-        $ingredientId = null;
-        $menuId = null;
-        $itemName = null;
-        $unit = $validated['unit'] ?? null;
-
-        if ($validated['type'] === 'operational') {
-            $itemName = $validated['item_name_ops'] ?? $validated['item_name'] ?? null;
-        } elseif (($validated['stock_item_type'] ?? null) === 'bahan_baku') {
-            $ingredient = Ingredient::find($validated['ingredient_id'] ?? null);
-            $ingredientId = $ingredient?->id;
-            $itemName = $ingredient?->nama_bahan;
-            $unit = $ingredient?->satuan ?? $unit;
-        } else {
-            $menu = Menu::whereKey($validated['menu_id'] ?? null)
-                ->whereIn('category', ['makanan', 'snack'])
-                ->where('is_available', true)
-                ->first();
-
-            $menuId = $menu?->id;
-            $itemName = $menu?->name;
-            $unit = $unit ?: 'pcs';
-        }
+        $itemName = match ($validated['type']) {
+            'operational' => $validated['item_name_ops'] ?? $validated['item_name'] ?? null,
+            default => ($validated['stock_item_type'] ?? null) === 'produk_jadi'
+                ? ($validated['item_name_produk'] ?? $validated['item_name'] ?? null)
+                : ($validated['item_name_bahan'] ?? $validated['item_name'] ?? null),
+        };
 
         if (!$itemName) {
             return back()
@@ -86,10 +68,8 @@ class StockRequestController extends Controller
             'requested_by'    => auth()->id(),
             'type'            => $validated['type'],
             'stock_item_type' => $validated['type'] === 'stock' ? $validated['stock_item_type'] : null,
-            'ingredient_id'   => $ingredientId,
-            'menu_id'         => $menuId,
             'item_name'       => $itemName,
-            'unit'            => $unit,
+            'unit'            => $validated['unit'] ?? null,
             'quantity'        => $validated['quantity'],
             'reason'          => $validated['reason'] ?? null,
             'status'          => 'pending',
@@ -110,8 +90,8 @@ class StockRequestController extends Controller
             'delivery_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
-        if ($stockRequest->status !== 'approved' || $stockRequest->delivery_status !== 'waiting') {
-            return back()->with('error', 'Pengajuan belum disetujui manager atau sudah pernah dikonfirmasi.');
+        if ($stockRequest->status !== 'approved') {
+            return back()->with('error', 'Pengajuan belum disetujui manager!');
         }
 
         if ($stockRequest->branch_id !== auth()->user()->branch_id) {

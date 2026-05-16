@@ -74,7 +74,6 @@ class ReportController extends Controller
             ->get();
 
         $criticalStocks = BranchStock::where('branch_id', $branchId)
-            ->whereHas('menu', fn($q) => $q->where('stock_type', 'kuantitas_jadi'))
             ->where('stock', '<=', 5)
             ->with('menu')
             ->get();

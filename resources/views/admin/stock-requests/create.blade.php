@@ -87,15 +87,14 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Bahan Baku <span class="text-red-500">*</span>
                     </label>
-                    <select name="ingredient_id" id="selectBahan"
+                    <select name="item_name_bahan" id="selectBahan"
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white"
                         onchange="updateSatuanFromBahan()">
                         <option value="">— Pilih Bahan Baku —</option>
                         @foreach($ingredients as $ing)
-                        <option value="{{ $ing->id }}"
-                            data-name="{{ $ing->nama_bahan }}"
+                        <option value="{{ $ing->nama_bahan }}"
                             data-satuan="{{ $ing->satuan }}"
-                            {{ (int) old('ingredient_id') === $ing->id ? 'selected' : '' }}>
+                            {{ old('item_name') === $ing->nama_bahan ? 'selected' : '' }}>
                             {{ $ing->nama_bahan }}
                         </option>
                         @endforeach
@@ -110,11 +109,11 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Menu (Makanan/Snack) <span class="text-red-500">*</span>
                     </label>
-                    <select name="menu_id" id="selectProduk"
+                    <select name="item_name_produk" id="selectProduk"
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white">
                         <option value="">— Pilih Menu —</option>
                         @foreach($produkJadi as $menu)
-                        <option value="{{ $menu->id }}" data-name="{{ $menu->name }}" {{ (int) old('menu_id') === $menu->id ? 'selected' : '' }}>
+                        <option value="{{ $menu->name }}" {{ old('item_name') === $menu->name ? 'selected' : '' }}>
                             {{ $menu->name }}
                         </option>
                         @endforeach
@@ -222,11 +221,9 @@ document.querySelector('form').addEventListener('submit', function () {
         const stockType = document.querySelector('input[name="stock_item_type"]:checked')?.value;
         let val = '';
         if (stockType === 'bahan_baku') {
-            const select = document.getElementById('selectBahan');
-            val = select.options[select.selectedIndex]?.dataset?.name ?? '';
+            val = document.getElementById('selectBahan').value;
         } else {
-            const select = document.getElementById('selectProduk');
-            val = select.options[select.selectedIndex]?.dataset?.name ?? '';
+            val = document.getElementById('selectProduk').value;
         }
         // Override item_name
         let hidden = document.querySelector('input[name="item_name"]');

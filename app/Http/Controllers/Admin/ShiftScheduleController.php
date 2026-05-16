@@ -45,16 +45,6 @@ class ShiftScheduleController extends Controller
             'note'       => 'nullable|string',
         ]);
 
-        $kasir = User::where('id', $request->user_id)
-            ->where('branch_id', auth()->user()->branch_id)
-            ->where('role', 'kasir')
-            ->first();
-
-        if (!$kasir) {
-            return back()->withErrors(['user_id' => 'Kasir tidak valid untuk cabang ini.'])
-                ->withInput();
-        }
-
         $times = match($request->shift) {
             'pagi'  => ['07:00:00', '15:00:00'],
             'siang' => ['15:00:00', '22:00:00'],
@@ -81,10 +71,6 @@ class ShiftScheduleController extends Controller
 
     public function destroy(ShiftSchedule $shiftSchedule)
     {
-        if ($shiftSchedule->branch_id !== auth()->user()->branch_id) {
-            abort(403);
-        }
-
         $shiftSchedule->delete();
         return back()->with('success', 'Jadwal shift dihapus!');
     }

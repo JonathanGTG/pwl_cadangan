@@ -27,15 +27,9 @@ class ShiftSchedule extends Model
     public function getIsActiveNowAttribute(): bool
     {
         $now = now()->format('H:i:s');
-
-        if ($this->start_time <= $this->end_time) {
-            return today()->equalTo($this->shift_date)
-                && $now >= $this->start_time
-                && $now <= $this->end_time;
-        }
-
-        return (today()->equalTo($this->shift_date) && $now >= $this->start_time)
-            || (today()->equalTo($this->shift_date->copy()->addDay()) && $now <= $this->end_time);
+        return today()->equalTo($this->shift_date)
+            && $now >= $this->start_time
+            && $now <= $this->end_time;
     }
 
     // Countdown sampai shift mulai

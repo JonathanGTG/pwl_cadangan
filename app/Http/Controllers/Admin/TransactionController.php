@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\BranchStock;
-use App\Models\IngredientStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,20 +73,8 @@ class TransactionController extends Controller
                         ->where('menu_id', $item->menu_id)
                         ->increment('stock', $item->quantity);
                 } else {
-                    if (!empty($item->recipe_snapshot)) {
-                        foreach ($item->recipe_snapshot as $recipeItem) {
-                            if (empty($recipeItem['ingredient_id']) || empty($recipeItem['amount'])) {
-                                continue;
-                            }
-
-                            IngredientStock::where('branch_id', $transaction->branch_id)
-                                ->where('ingredient_id', $recipeItem['ingredient_id'])
-                                ->increment('stok_sekarang', $recipeItem['amount'] * $item->quantity);
-                        }
-                    } else {
-                        // Fallback untuk transaksi lama sebelum snapshot resep tersedia.
-                        $menu->restoreIngredients($transaction->branch_id, $item->quantity);
-                    }
+                    // Minuman: kembalikan bahan baku
+                    $menu->restoreIngredients($transaction->branch_id, $item->quantity);
                 }
             }
 
