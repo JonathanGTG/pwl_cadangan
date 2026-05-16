@@ -29,7 +29,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('promotions', function (Blueprint $table) {
-            //
+            $table->dropForeign(['reviewed_by']);
+            $table->dropColumn([
+                'review_status',
+                'review_note',
+                'reviewed_by',
+                'reviewed_at',
+            ]);
         });
     }
 };

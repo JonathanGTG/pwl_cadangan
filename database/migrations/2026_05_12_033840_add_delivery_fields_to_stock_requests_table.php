@@ -29,6 +29,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stock_requests', function (Blueprint $table) {
+            $table->dropForeign(['delivered_by']);
             $table->dropColumn(['delivery_status', 'delivery_note', 'delivery_photo', 'delivered_at', 'delivered_by']);
         });
     }
