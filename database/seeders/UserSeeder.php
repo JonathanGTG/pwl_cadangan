@@ -70,7 +70,7 @@ class UserSeeder extends Seeder
         BranchStock::query()->delete();
         IngredientStock::query()->delete();
         Ingredient::query()->delete();
-        Menu::withTrashed()->get()->each->forceDelete();
+        $existingMenus = Menu::withTrashed()->orderBy('id')->get();
 
         $branches = [$branch1, $branch2];
 
@@ -152,15 +152,30 @@ class UserSeeder extends Seeder
 
         $menuMap = [];
 
-        foreach ($menus as $menuData) {
-            $menu = Menu::create([
-                'name' => $menuData['name'],
-                'description' => $menuData['description'],
-                'category' => $menuData['category'],
-                'stock_type' => $menuData['stock_type'],
-                'base_price' => $menuData['price'],
-                'is_available' => true,
-            ]);
+        foreach ($menus as $index => $menuData) {
+            $menu = $existingMenus->get($index);
+
+            if ($menu) {
+                $menu->restore();
+                $menu->update([
+                    'name' => $menuData['name'],
+                    'description' => $menuData['description'],
+                    'category' => $menuData['category'],
+                    'stock_type' => $menuData['stock_type'],
+                    'base_price' => $menuData['price'],
+                    'image' => null,
+                    'is_available' => true,
+                ]);
+            } else {
+                $menu = Menu::create([
+                    'name' => $menuData['name'],
+                    'description' => $menuData['description'],
+                    'category' => $menuData['category'],
+                    'stock_type' => $menuData['stock_type'],
+                    'base_price' => $menuData['price'],
+                    'is_available' => true,
+                ]);
+            }
 
             $menuMap[$menuData['code']] = $menu;
 
@@ -173,6 +188,10 @@ class UserSeeder extends Seeder
                 ]);
             }
         }
+
+        $existingMenus->slice(count($menus))->each(function (Menu $menu) {
+            $menu->delete();
+        });
 
         $recipes = [
             ['menu_code' => 'MNU-C001', 'ingredient_code' => 'BHN-001', 'amount' => 18],
