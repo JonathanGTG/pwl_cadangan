@@ -22,7 +22,7 @@
 {{-- ═══ PROMO CABANG (perlu ditinjau) ═══ --}}
 <div class="mb-8">
     <div class="flex items-center gap-2 mb-4">
-        <h3 class="font-display font-semibold text-gray-800">🏪 Promo Cabang</h3>
+        <h3 class="font-display font-semibold text-gray-800">Promo Cabang</h3>
         @php $pendingCount = $branchPromos->where('review_status', 'pending')->count(); @endphp
         @if($pendingCount > 0)
         <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
@@ -40,14 +40,14 @@
                 {{ $promo->review_status === 'approved' ? 'bg-gradient-to-r from-purple-600 to-purple-800' : '' }}
                 {{ $promo->review_status === 'rejected' ? 'bg-gradient-to-r from-gray-500 to-gray-700' : '' }}">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-semibold text-white/80">🏪 {{ $promo->branch->name ?? '-' }}</span>
+                    <span class="text-xs font-semibold text-white/80">{{ $promo->branch->name ?? '-' }}</span>
                     <span class="text-xs font-bold px-2 py-0.5 rounded-full
                         {{ $promo->review_status === 'pending'  ? 'bg-white/20 text-white' : '' }}
                         {{ $promo->review_status === 'approved' ? 'bg-emerald-400/30 text-white' : '' }}
                         {{ $promo->review_status === 'rejected' ? 'bg-red-400/30 text-white' : '' }}">
-                        {{ $promo->review_status === 'pending'  ? '⏳ Menunggu' : '' }}
-                        {{ $promo->review_status === 'approved' ? '✅ Disetujui' : '' }}
-                        {{ $promo->review_status === 'rejected' ? '❌ Ditolak' : '' }}
+                        {{ $promo->review_status === 'pending'  ? 'Menunggu' : '' }}
+                        {{ $promo->review_status === 'approved' ? 'Disetujui' : '' }}
+                        {{ $promo->review_status === 'rejected' ? 'Ditolak' : '' }}
                     </span>
                 </div>
                 <h3 class="font-display font-bold text-white mt-2 text-base">{{ $promo->name }}</h3>
@@ -138,13 +138,13 @@
 
 {{-- ═══ PROMO GLOBAL ═══ --}}
 <div>
-    <h3 class="font-display font-semibold text-gray-800 mb-4">🌐 Promo Global</h3>
+    <h3 class="font-display font-semibold text-gray-800 mb-4">Promo Global</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         @forelse($globalPromos as $promo)
         <div class="bg-white rounded-3xl shadow-soft overflow-hidden smooth-transition hover:-translate-y-1 hover:shadow-hover">
             <div class="p-4 bg-gradient-to-r from-elco-coffee to-elco-mocha">
                 <div class="flex justify-between">
-                    <span class="text-xs font-semibold text-white/80">🌐 Global</span>
+                    <span class="text-xs font-semibold text-white/80">Global</span>
                     @if($promo->is_valid)
                     <span class="text-xs text-emerald-300 font-semibold">● Aktif</span>
                     @else

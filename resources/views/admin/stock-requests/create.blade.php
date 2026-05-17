@@ -30,7 +30,7 @@
                                onchange="handleTypeChange()">
                         <div class="p-4 border-2 border-gray-200 rounded-2xl peer-checked:border-elco-coffee peer-checked:bg-elco-cream smooth-transition text-center">
                             <i class="ph-fill ph-package text-2xl text-gray-400 block mb-2"></i>
-                            <p class="text-sm font-semibold text-gray-700">📦 Pengajuan Stok</p>
+                            <p class="text-sm font-semibold text-gray-700">Pengajuan Stok</p>
                             <p class="text-xs text-gray-400 mt-1">Bahan baku & produk jadi</p>
                         </div>
                     </label>
@@ -40,7 +40,7 @@
                                onchange="handleTypeChange()">
                         <div class="p-4 border-2 border-gray-200 rounded-2xl peer-checked:border-elco-coffee peer-checked:bg-elco-cream smooth-transition text-center">
                             <i class="ph-fill ph-wrench text-2xl text-gray-400 block mb-2"></i>
-                            <p class="text-sm font-semibold text-gray-700">🔧 Alat Operasional</p>
+                            <p class="text-sm font-semibold text-gray-700">Alat Operasional</p>
                             <p class="text-xs text-gray-400 mt-1">Peralatan & perlengkapan</p>
                         </div>
                     </label>
@@ -65,7 +65,7 @@
                                    onchange="handleStockItemTypeChange()">
                             <div class="p-3 border-2 border-gray-200 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 smooth-transition text-center">
                                 <i class="ph ph-flask text-xl text-gray-400 block mb-1"></i>
-                                <p class="text-xs font-semibold text-gray-700">☕ Bahan Baku</p>
+                                <p class="text-xs font-semibold text-gray-700">Bahan Baku</p>
                                 <p class="text-xs text-gray-400">Untuk minuman</p>
                             </div>
                         </label>
@@ -75,7 +75,7 @@
                                    onchange="handleStockItemTypeChange()">
                             <div class="p-3 border-2 border-gray-200 rounded-xl peer-checked:border-purple-500 peer-checked:bg-purple-50 smooth-transition text-center">
                                 <i class="ph ph-package text-xl text-gray-400 block mb-1"></i>
-                                <p class="text-xs font-semibold text-gray-700">🍰 Produk Jadi</p>
+                                <p class="text-xs font-semibold text-gray-700">Produk Jadi</p>
                                 <p class="text-xs text-gray-400">Makanan & Snack</p>
                             </div>
                         </label>

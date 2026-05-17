@@ -49,6 +49,38 @@ class Menu extends Model
         return $this->stock_type === 'kuantitas_jadi';
     }
 
+    public function availablePortions(int $branchId): int
+    {
+        if (! $this->isIngredientBased()) {
+            return 0;
+        }
+
+        $ingredients = $this->relationLoaded('ingredients')
+            ? $this->ingredients
+            : $this->ingredients()->get();
+
+        if ($ingredients->isEmpty()) {
+            return 0;
+        }
+
+        $ingredientStocks = IngredientStock::where('branch_id', $branchId)
+            ->pluck('stok_sekarang', 'ingredient_id');
+
+        $minPortions = null;
+        foreach ($ingredients as $mi) {
+            $perServing = (float) $mi->jumlah_per_sajian;
+            if ($perServing <= 0) {
+                return 0;
+            }
+
+            $available = (float) ($ingredientStocks[$mi->ingredient_id] ?? 0);
+            $portions  = (int) floor($available / $perServing);
+            $minPortions = $minPortions === null ? $portions : min($minPortions, $portions);
+        }
+
+        return max(0, (int) ($minPortions ?? 0));
+    }
+
     /**
      * Cek apakah bahan baku di cabang tertentu mencukupi untuk qty porsi.
      * Hanya dipakai untuk menu berjenis bahan_baku.

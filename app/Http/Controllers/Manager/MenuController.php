@@ -184,6 +184,12 @@ class MenuController extends Controller
                          ->with('success', 'Menu berhasil diperbarui!');
     }
 
+    public function recipe(Menu $menu)
+    {
+        $menuIngredients = $menu->ingredients()->with('ingredient')->get();
+        return view('manager.menus.recipe', compact('menu', 'menuIngredients'));
+    }
+
     // Soft delete menu
     public function destroy(Menu $menu)
     {
@@ -217,7 +223,15 @@ class MenuController extends Controller
             'satuan'      => 'required|in:gram,ml,pcs',
         ]);
 
-        Ingredient::create($request->only('kode_bahan', 'nama_bahan', 'kategori', 'satuan'));
+        $ingredient = Ingredient::create($request->only('kode_bahan', 'nama_bahan', 'kategori', 'satuan'));
+
+        $branches = Branch::where('status', 'active')->get();
+        foreach ($branches as $branch) {
+            IngredientStock::firstOrCreate(
+                ['branch_id' => $branch->id, 'ingredient_id' => $ingredient->id],
+                ['stok_sekarang' => 0, 'stok_minimum' => 0]
+            );
+        }
 
         return redirect()->route('manager.menus.ingredients')
                          ->with('success', 'Bahan baku berhasil ditambahkan!');

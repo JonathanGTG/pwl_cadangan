@@ -26,9 +26,9 @@ class KasirShift extends Model
     public function getShiftLabelAttribute(): string
     {
         return match($this->shift) {
-            'pagi'  => '🌅 Pagi (07.00 - 15.00)',
-            'siang' => '☀️ Siang (15.00 - 22.00)',
-            'malam' => '🌙 Malam (22.00 - 07.00)',
+            'pagi'  => 'Pagi (07.00 - 15.00)',
+            'siang' => 'Siang (15.00 - 22.00)',
+            'malam' => 'Malam (22.00 - 07.00)',
         };
     }
 }

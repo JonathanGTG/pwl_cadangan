@@ -18,13 +18,13 @@
     {{-- ═══ KIRI: Daftar Menu ═══ --}}
     <div class="xl:col-span-2 space-y-4">
 
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <h2 class="text-lg font-display font-bold text-gray-800">Menu Tersedia</h2>
             {{-- Filter Kategori --}}
-            <div class="flex gap-2">
-                @foreach(['semua' => 'Semua', 'minuman' => '☕ Minuman', 'makanan_snack' => '🍱 Makanan & Snack'] as $val => $label)
+            <div class="flex flex-wrap gap-2 md:justify-end">
+                @foreach(['semua' => 'Semua', 'minuman' => 'Minuman', 'makanan_snack' => 'Makanan & Snack'] as $val => $label)
                 <button onclick="filterMenu('{{ $val }}')" id="cat-{{ $val }}"
-                    class="px-3 py-1.5 rounded-xl text-xs font-medium smooth-transition
+                    class="px-4 py-2 rounded-xl text-sm font-medium smooth-transition
                     {{ $val === 'semua' ? 'bg-elco-coffee text-white' : 'bg-white text-gray-500 shadow-soft' }}">
                     {{ $label }}
                 </button>
@@ -37,7 +37,8 @@
             @forelse($stocks as $stock)
             @php
                 $isIngredientBased = $stock->menu->isIngredientBased();
-                $cartLimit = $isIngredientBased ? 999 : (int) $stock->stock;
+                $available = (int) ($stock->available_portions ?? ($isIngredientBased ? 0 : $stock->stock));
+                $cartLimit = $available;
             @endphp
             <div class="menu-item bg-white rounded-2xl shadow-soft overflow-hidden cursor-pointer smooth-transition hover:-translate-y-1 hover:shadow-hover active:scale-95"
                  data-category="{{ $stock->menu->category }}"
@@ -46,7 +47,7 @@
                 {{-- Gambar --}}
                 <div class="h-32 bg-gradient-to-br from-elco-cream to-orange-50 relative">
                     @if($stock->menu->image)
-                        <img src="{{ Storage::url($stock->menu->image) }}"
+                        <img src="{{ Storage::disk('public')->url($stock->menu->image) }}"
                              class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
@@ -54,7 +55,7 @@
                         </div>
                     @endif
                     <span class="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm text-xs font-semibold text-gray-600 px-2 py-0.5 rounded-lg">
-                        {{ $isIngredientBased ? 'Bahan tersedia' : 'Stok: '.$stock->stock }}
+                        {{ $isIngredientBased ? 'Sisa: '.$available.' porsi' : 'Stok: '.$available }}
                     </span>
                 </div>
 
@@ -136,13 +137,13 @@
 
             {{-- Metode Pembayaran --}}
             <div class="mb-4">
-                <p class="text-xs font-semibold text-gray-500 mb-2">Metode Pembayaran</p>
+                <p class="text-sm font-semibold text-gray-500 mb-2">Metode Pembayaran</p>
                 <div class="grid grid-cols-3 gap-2">
-                    @foreach(['cash' => '💵 Cash', 'transfer' => '🏦 Transfer', 'qris' => '📱 QRIS'] as $val => $label)
+                    @foreach(['cash' => 'Cash', 'transfer' => 'Transfer', 'qris' => 'QRIS'] as $val => $label)
                     <label class="cursor-pointer">
                         <input type="radio" name="payment_method" value="{{ $val }}"
                                class="sr-only peer" {{ $val === 'cash' ? 'checked' : '' }}>
-                        <div class="text-center p-2 border-2 border-gray-200 rounded-xl text-xs font-medium text-gray-600
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-600
                                     peer-checked:border-elco-coffee peer-checked:bg-elco-cream peer-checked:text-elco-coffee smooth-transition">
                             {{ $label }}
                         </div>
@@ -157,105 +158,74 @@
             </button>
         </div>
 
-        {{-- Riwayat Hari Ini --}}
-        <div class="bg-white rounded-3xl shadow-soft p-5">
-            <h3 class="font-display font-semibold text-gray-700 mb-3 text-sm">
-                Transaksi Hari Ini
-                <span class="text-xs text-gray-400 font-normal ml-1">({{ $todayTransactions->count() }} transaksi)</span>
-            </h3>
-            <div class="space-y-2 max-h-48 overflow-y-auto hide-scrollbar">
-                @forelse($todayTransactions as $trx)
-                <a href="{{ route('kasir.transactions.show', $trx) }}"
-                   class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 smooth-transition">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-700">{{ $trx->invoice_number }}</p>
-                        <p class="text-xs text-gray-400">{{ $trx->items->count() }} item</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-elco-coffee">
-                            Rp {{ number_format($trx->total, 0, ',', '.') }}
-                        </p>
-                        <span class="text-xs px-2 py-0.5 rounded-full
-                            {{ $trx->status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600' }}">
-                            {{ ucfirst($trx->status) }}
-                        </span>
-                    </div>
-                </a>
-                {{-- Riwayat Transaksi Hari Ini --}}
-@if($todayTransactions->count() > 0)
-<div class="mt-6 bg-white rounded-3xl shadow-soft overflow-hidden">
-    <div class="p-5 border-b border-gray-100">
-        <h3 class="font-display font-semibold text-gray-800">
-            Transaksi Hari Ini
-            <span class="text-sm text-gray-400 font-normal ml-2">
-                {{ $todayTransactions->count() }} transaksi
-            </span>
-        </h3>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
-                    <th class="py-3 px-5 font-medium">Invoice</th>
-                    <th class="py-3 px-5 font-medium">Item</th>
-                    <th class="py-3 px-5 font-medium">Total</th>
-                    <th class="py-3 px-5 font-medium">Status</th>
-                    <th class="py-3 px-5 font-medium">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($todayTransactions as $trx)
-                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
-                    <td class="py-3 px-5">
-                        <p class="text-sm font-semibold text-gray-800">{{ $trx->invoice_number }}</p>
-                        <p class="text-xs text-gray-400">{{ $trx->created_at->format('H:i') }}</p>
-                    </td>
-                    <td class="py-3 px-5 text-sm text-gray-600">
-                        {{ $trx->items->count() }} item
-                    </td>
-                    <td class="py-3 px-5 text-sm font-bold text-elco-coffee">
-                        Rp {{ number_format($trx->total, 0, ',', '.') }}
-                    </td>
-                    <td class="py-3 px-5">
-                        <span class="px-2 py-1 rounded-full text-xs font-medium
-                            {{ $trx->status === 'completed' ? 'bg-emerald-100 text-emerald-700' : '' }}
-                            {{ $trx->status === 'pending'   ? 'bg-yellow-100 text-yellow-700' : '' }}
-                            {{ $trx->status === 'cancelled' ? 'bg-red-100 text-red-700' : '' }}">
-                            {{ ucfirst($trx->status) }}
-                        </span>
-                    </td>
-                    <td class="py-3 px-5">
-                        <div class="flex gap-2">
-                            {{-- Selesaikan --}}
-                            @if($trx->status === 'completed' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
-                                <button onclick="requestCancel({{ $trx->id }})"
-                                    class="text-xs font-medium text-orange-500 bg-orange-50 px-3 py-1.5 rounded-xl hover:bg-orange-100 smooth-transition">
-                                    <i class="ph ph-x-circle"></i> Minta Batal
-                                </button>
-                                @elseif(str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
-                                <span class="text-xs text-orange-400 font-medium">⏳ Menunggu Admin</span>
-                            @endif
-
-                            {{-- Lihat Struk --}}
-                            <a href="{{ route('kasir.transactions.show', $trx) }}"
-                               class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-1.5 rounded-xl hover:bg-elco-latte/30 smooth-transition">
-                                <i class="ph ph-receipt"></i> Struk
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
     </div>
 </div>
-@endif
-                @empty
-                <p class="text-xs text-gray-400 text-center py-4">Belum ada transaksi hari ini</p>
-                @endforelse
-            </div>
-        </div>
+
+{{-- Riwayat Hari Ini --}}
+<div class="mt-6 bg-white rounded-3xl shadow-soft overflow-hidden">
+    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+        <h3 class="font-display font-bold text-gray-800 text-lg">
+            Transaksi Hari Ini
+        </h3>
+        <p class="text-sm text-gray-500">{{ $todayTransactions->count() }} transaksi</p>
     </div>
+    @if($todayTransactions->count() > 0)
+        <div class="overflow-x-auto max-h-[520px] overflow-y-auto hide-scrollbar">
+            <table class="w-full text-left min-w-[720px]">
+                <thead>
+                    <tr class="text-xs text-gray-400 border-b border-gray-100 bg-gray-50 sticky top-0">
+                        <th class="py-4 px-6 font-medium">Invoice</th>
+                        <th class="py-4 px-6 font-medium">Item</th>
+                        <th class="py-4 px-6 font-medium">Total</th>
+                        <th class="py-4 px-6 font-medium">Status</th>
+                        <th class="py-4 px-6 font-medium">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($todayTransactions as $trx)
+                        <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
+                            <td class="py-4 px-6">
+                                <p class="text-base font-semibold text-gray-800">{{ $trx->invoice_number }}</p>
+                                <p class="text-xs text-gray-400">{{ $trx->created_at->format('H:i') }}</p>
+                            </td>
+                            <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->items->count() }} item</td>
+                            <td class="py-4 px-6 text-base font-bold text-elco-coffee">
+                                Rp {{ number_format($trx->total, 0, ',', '.') }}
+                            </td>
+                            <td class="py-4 px-6">
+                                @if(str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Menunggu Admin</span>
+                                @else
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium
+                                        {{ $trx->status === 'completed' ? 'bg-emerald-100 text-emerald-700' : '' }}
+                                        {{ $trx->status === 'pending'   ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                        {{ $trx->status === 'cancelled' ? 'bg-red-100 text-red-700' : '' }}">
+                                        {{ ucfirst($trx->status) }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex flex-wrap gap-2">
+                                    @if($trx->status === 'completed' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
+                                        <button onclick="requestCancel({{ $trx->id }})"
+                                            class="text-sm font-semibold text-orange-600 bg-orange-50 px-4 py-2 rounded-xl hover:bg-orange-100 smooth-transition whitespace-nowrap">
+                                            <i class="ph ph-x-circle mr-1"></i> Minta Batal
+                                        </button>
+                                    @endif
+                                    <a href="{{ route('kasir.transactions.show', $trx) }}"
+                                       class="text-sm font-semibold text-elco-coffee bg-elco-cream px-4 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition whitespace-nowrap">
+                                        <i class="ph ph-receipt mr-1"></i> Struk
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="py-10 text-center text-gray-400 text-sm">Belum ada transaksi hari ini</div>
+    @endif
 </div>
 
 {{-- Hidden Form untuk Submit --}}
@@ -299,14 +269,14 @@ const rupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 // ── Tambah ke Keranjang ──────────────────────────────────
 function addToCart(stockId, name, price, maxStock, ingredientBased = false) {
     maxStock = parseInt(maxStock);
-    if (!ingredientBased && maxStock <= 0) {
-        elcoError('Stok Habis', `Stok ${name} kosong`);
+    if (maxStock <= 0) {
+        elcoError('Stok Habis', ingredientBased ? `Sisa porsi ${name} kosong` : `Stok ${name} kosong`);
         return;
     }
 
     if (cart[stockId]) {
-        if (!cart[stockId].ingredientBased && cart[stockId].qty >= maxStock) {
-            elcoError('Stok Habis', `Stok ${name} hanya tersisa ${maxStock}`);
+        if (cart[stockId].qty >= maxStock) {
+            elcoError('Stok Habis', ingredientBased ? `Sisa porsi ${name} hanya ${maxStock}` : `Stok ${name} hanya tersisa ${maxStock}`);
             return;
         }
         cart[stockId].qty++;
@@ -348,14 +318,14 @@ function renderCart() {
             </div>
             <div class="flex items-center gap-2 ml-3 flex-shrink-0">
                 <button onclick="changeQty(${id}, -1)"
-                    class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600
+                    class="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600
                            flex items-center justify-center hover:bg-red-50 hover:text-red-500
-                           smooth-transition font-bold text-sm">−</button>
+                           smooth-transition font-bold text-base">−</button>
                 <span class="text-sm font-bold text-gray-800 w-6 text-center">${item.qty}</span>
                 <button onclick="changeQty(${id}, 1)"
-                    class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600
+                    class="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600
                            flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-500
-                           smooth-transition font-bold text-sm">+</button>
+                           smooth-transition font-bold text-base">+</button>
             </div>
         </div>`;
     }).join('');
@@ -368,7 +338,7 @@ function changeQty(id, delta) {
     if (!cart[id]) return;
     cart[id].qty += delta;
     if (cart[id].qty <= 0) delete cart[id];
-    else if (!cart[id].ingredientBased && cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
+    else if (cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
     renderCart();
 }
 
@@ -452,7 +422,7 @@ async function processTransaction() {
     const { subtotal, discount } = applyPromo();
     const total = subtotal - discount;
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash';
-    const paymentLabels = { cash: '💵 Cash', transfer: '🏦 Transfer', qris: '📱 QRIS' };
+    const paymentLabels = { cash: 'Cash', transfer: 'Transfer', qris: 'QRIS' };
 
     // Buat ringkasan pesanan untuk konfirmasi
     const itemList = Object.values(cart)

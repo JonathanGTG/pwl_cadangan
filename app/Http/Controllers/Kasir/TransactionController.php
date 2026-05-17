@@ -33,13 +33,14 @@ class TransactionController extends Controller
                 $menu = $bs->menu;
 
                 if ($menu->isQuantityBased()) {
-                    // Makanan/snack: cukup cek stok pcs
+                    $bs->available_portions = (int) $bs->stock;
                     return $bs->stock > 0;
                 }
 
-                // Minuman: cek ketersediaan bahan baku (minimal 1 porsi)
-                return $menu->checkIngredients($branchId, 1)['ok'];
-            });
+                $bs->available_portions = (int) $menu->availablePortions($branchId);
+                return $bs->available_portions > 0;
+            })
+            ->values();
 
         // Promo aktif (global + cabang)
         $promotions = Promotion::where('is_active', true)

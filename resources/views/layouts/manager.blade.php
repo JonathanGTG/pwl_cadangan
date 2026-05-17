@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELCO - Manager Dashboard</title>
     
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@400;500;600;700&display=swap)" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <script src="[https://unpkg.com/@phosphor-icons/web](https://unpkg.com/@phosphor-icons/web)"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -41,7 +41,7 @@
         
         @include('components.manager.navbar')
 
-        <div class="flex-1 overflow-y-auto p-8 pt-0 hide-scrollbar">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 pt-0 hide-scrollbar">
             @yield('content')
         </div>
         

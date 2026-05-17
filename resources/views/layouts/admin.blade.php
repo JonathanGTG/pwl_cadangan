@@ -36,7 +36,7 @@
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#F4F6F8]">
         @include('components.admin.navbar')
-        <div class="flex-1 overflow-y-auto p-8 pt-0 hide-scrollbar">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 pt-0 hide-scrollbar">
             @yield('content')
         </div>
     </main>

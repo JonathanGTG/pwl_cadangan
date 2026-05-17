@@ -26,7 +26,7 @@
             <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-elco-mocha smooth-transition"
                  onclick="document.getElementById('imageInput').click()">
                 @if($menu->image)
-                    <img id="previewImg" src="{{ Storage::url($menu->image) }}"
+                    <img id="previewImg" src="{{ Storage::disk('public')->url($menu->image) }}"
                          class="h-32 rounded-xl object-cover mb-2">
                 @else
                     <img id="previewImg" src="" class="h-32 rounded-xl object-cover mb-2 hidden">
@@ -61,9 +61,9 @@
                     </label>
                     <select name="category" id="categorySelect" onchange="handleCategoryChange()"
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition bg-white">
-                        <option value="minuman" {{ old('category', $menu->category) === 'minuman' ? 'selected' : '' }}>☕ Minuman</option>
-                        <option value="makanan" {{ old('category', $menu->category) === 'makanan' ? 'selected' : '' }}>🍱 Makanan</option>
-                        <option value="snack"   {{ old('category', $menu->category) === 'snack'   ? 'selected' : '' }}>🍪 Snack</option>
+                        <option value="minuman" {{ old('category', $menu->category) === 'minuman' ? 'selected' : '' }}>Minuman</option>
+                        <option value="makanan" {{ old('category', $menu->category) === 'makanan' ? 'selected' : '' }}>Makanan</option>
+                        <option value="snack"   {{ old('category', $menu->category) === 'snack'   ? 'selected' : '' }}>Snack</option>
                     </select>
                 </div>
                 <div>

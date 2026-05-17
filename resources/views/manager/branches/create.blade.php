@@ -131,6 +131,59 @@
                 </div>
             </div>
 
+            <div class="border-t border-gray-100 pt-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                        <i class="ph-fill ph-users"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-gray-700 uppercase tracking-wide">Akun Kasir</p>
+                        <p class="text-xs text-gray-400">Opsional, bisa dibuat saat cabang dibuat</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Kasir</label>
+                        <input type="text" name="kasir_name" value="{{ old('kasir_name') }}"
+                            placeholder="contoh: Siti"
+                            class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
+                            @error('kasir_name') border-red-400 @enderror">
+                        @error('kasir_name')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email Kasir</label>
+                        <input type="email" name="kasir_email" value="{{ old('kasir_email') }}"
+                            placeholder="kasir@elco.com"
+                            class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
+                            @error('kasir_email') border-red-400 @enderror">
+                        @error('kasir_email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Password Kasir</label>
+                        <div class="relative">
+                            <input type="password" name="kasir_password" id="kasirPass"
+                                placeholder="Minimal 8 karakter"
+                                class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition pr-12
+                                @error('kasir_password') border-red-400 @enderror">
+                            <button type="button" onclick="toggleKasirPass()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="ph ph-eye" id="kasirPassIcon"></i>
+                            </button>
+                        </div>
+                        @error('kasir_password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             {{-- Tombol --}}
             <div class="flex gap-3 pt-2">
                 <a href="{{ route('manager.branches.index') }}"
@@ -153,6 +206,18 @@
 function toggleAdminPass() {
     const input = document.getElementById('adminPass');
     const icon  = document.getElementById('adminPassIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('ph-eye', 'ph-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('ph-eye-slash', 'ph-eye');
+    }
+}
+
+function toggleKasirPass() {
+    const input = document.getElementById('kasirPass');
+    const icon  = document.getElementById('kasirPassIcon');
     if (input.type === 'password') {
         input.type = 'text';
         icon.classList.replace('ph-eye', 'ph-eye-slash');

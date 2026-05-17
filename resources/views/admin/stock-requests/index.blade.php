@@ -41,7 +41,7 @@
                 <td class="py-4 px-6">
                     <span class="px-3 py-1 rounded-full text-xs font-medium
                         {{ $req->type === 'stock' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600' }}">
-                        {{ $req->type === 'stock' ? '📦 Stok' : '🔧 Operasional' }}
+                        {{ $req->type === 'stock' ? 'Stok' : 'Operasional' }}
                     </span>
                 </td>
                 <td class="py-4 px-6 text-sm text-gray-700 font-medium">
@@ -57,8 +57,8 @@
                             {{ $req->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
                             {{ $req->status === 'approved' ? 'bg-blue-100 text-blue-700' : '' }}
                             {{ $req->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
-                            {{ $req->status === 'pending' ? '⏳ Pending'
-                                : ($req->status === 'approved' ? '✅ Disetujui' : '❌ Ditolak') }}
+                            {{ $req->status === 'pending' ? 'Pending'
+                                : ($req->status === 'approved' ? 'Disetujui' : 'Ditolak') }}
                         </span>
                         {{-- Status Pengiriman --}}
                         @if($req->status === 'approved')
@@ -66,9 +66,9 @@
                             {{ $req->delivery_status === 'waiting'   ? 'bg-orange-100 text-orange-700' : '' }}
                             {{ $req->delivery_status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : '' }}
                             {{ $req->delivery_status === 'confirmed' ? 'bg-purple-100 text-purple-700' : '' }}">
-                            {{ $req->delivery_status === 'waiting'   ? '🚚 Menunggu Barang' : '' }}
-                            {{ $req->delivery_status === 'delivered' ? '📦 Menunggu Konfirmasi' : '' }}
-                            {{ $req->delivery_status === 'confirmed' ? '✅ Stok Bertambah' : '' }}
+                            {{ $req->delivery_status === 'waiting'   ? 'Menunggu Barang' : '' }}
+                            {{ $req->delivery_status === 'delivered' ? 'Menunggu Konfirmasi' : '' }}
+                            {{ $req->delivery_status === 'confirmed' ? 'Stok Bertambah' : '' }}
                         </span>
                         @endif
                     </div>
@@ -82,9 +82,9 @@
                         <i class="ph ph-package"></i> Konfirmasi Terima
                     </button>
                     @elseif($req->delivery_status === 'delivered')
-                    <span class="text-xs text-blue-600 font-medium">📤 Terkirim ke Manager</span>
+                    <span class="text-xs text-blue-600 font-medium">Terkirim ke Manager</span>
                     @elseif($req->delivery_status === 'confirmed')
-                    <span class="text-xs text-emerald-600 font-medium">✅ Selesai</span>
+                    <span class="text-xs text-emerald-600 font-medium">Selesai</span>
                     @else
                     <span class="text-xs text-gray-400">—</span>
                     @endif
@@ -105,7 +105,7 @@
         </tbody>
     </table>
     {{-- Modal Konfirmasi Barang Sampai --}}
-    `<div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">
             <h3 class="font-display font-bold text-gray-800 text-lg mb-2">
                 <i class="ph ph-package mr-2 text-emerald-500"></i>Konfirmasi Barang Sampai

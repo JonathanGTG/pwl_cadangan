@@ -44,7 +44,7 @@
         {{-- Gambar Menu --}}
         <div class="h-44 bg-gradient-to-br from-elco-cream to-orange-50 relative overflow-hidden">
             @if($menu->image)
-                <img src="{{ Storage::url($menu->image) }}"
+                <img src="{{ Storage::disk('public')->url($menu->image) }}"
                      alt="{{ $menu->name }}"
                      class="w-full h-full object-cover">
             @else
@@ -97,6 +97,12 @@
                     </form>
                 @else
                     <div class="flex gap-2">
+                        @if($menu->isIngredientBased())
+                            <a href="{{ route('manager.menus.recipe', $menu) }}"
+                               class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center hover:bg-amber-100 smooth-transition">
+                                <i class="ph ph-flask"></i>
+                            </a>
+                        @endif
                         <a href="{{ route('manager.menus.edit', $menu) }}"
                            class="w-9 h-9 rounded-xl bg-elco-cream text-elco-coffee flex items-center justify-center hover:bg-elco-latte/30 smooth-transition">
                             <i class="ph ph-pencil"></i>

@@ -83,8 +83,8 @@
                         {{ $expense->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
                         {{ $expense->status === 'verified' ? 'bg-emerald-100 text-emerald-700' : '' }}
                         {{ $expense->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
-                        {{ $expense->status === 'pending' ? '⏳ Pending'
-                            : ($expense->status === 'verified' ? '✅ Verified' : '❌ Ditolak') }}
+                        {{ $expense->status === 'pending' ? 'Pending'
+                            : ($expense->status === 'verified' ? 'Verified' : 'Ditolak') }}
                     </span>
                 </td>
                 <td class="py-4 px-6">

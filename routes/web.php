@@ -62,6 +62,8 @@ Route::middleware(['auth', 'role:manager'])
         Route::resource('menus', MenuController::class)->except(['show']);
         Route::post('menus/{id}/restore', [MenuController::class, 'restore'])
              ->name('menus.restore');
+        Route::get('menus/{menu}/recipe', [MenuController::class, 'recipe'])
+            ->name('menus.recipe');
 
         // ── BARU: Master Bahan Baku ──────────────────────────────────────────
         Route::get('menus/ingredients', [MenuController::class, 'ingredients'])

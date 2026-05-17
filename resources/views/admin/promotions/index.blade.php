@@ -20,20 +20,20 @@
 </div>
 
 {{-- Promo Cabang --}}
-<h3 class="font-display font-semibold text-gray-700 mb-3">🏪 Promo Cabang Saya</h3>
+<h3 class="font-display font-semibold text-gray-700 mb-3">Promo Cabang Saya</h3>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
     @forelse($branchPromos as $promo)
     <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
         <div class="p-4 bg-gradient-to-r from-purple-600 to-purple-800">
             <div class="flex justify-between items-start">
-                <span class="text-xs font-semibold text-white/80">🏪 Promo Cabang</span>
+                <span class="text-xs font-semibold text-white/80">Promo Cabang</span>
                 <span class="text-xs font-bold px-2 py-0.5 rounded-full
                     {{ $promo->review_status === 'pending'  ? 'bg-yellow-400/30 text-white' : '' }}
                     {{ $promo->review_status === 'approved' ? 'bg-emerald-400/30 text-white' : '' }}
                     {{ $promo->review_status === 'rejected' ? 'bg-red-400/30 text-white' : '' }}">
-                    {{ $promo->review_status === 'pending'  ? '⏳ Menunggu Review' : '' }}
-                    {{ $promo->review_status === 'approved' ? '✅ Disetujui' : '' }}
-                    {{ $promo->review_status === 'rejected' ? '❌ Ditolak' : '' }}
+                    {{ $promo->review_status === 'pending'  ? 'Menunggu Review' : '' }}
+                    {{ $promo->review_status === 'approved' ? 'Disetujui' : '' }}
+                    {{ $promo->review_status === 'rejected' ? 'Ditolak' : '' }}
                 </span>
             </div>
             @if($promo->review_status === 'rejected' && $promo->review_note)
@@ -85,13 +85,13 @@
 </div>
 
 {{-- Promo Global --}}
-<h3 class="font-display font-semibold text-gray-700 mb-3">🌐 Promo Global (dari Manager)</h3>
+<h3 class="font-display font-semibold text-gray-700 mb-3">Promo Global (dari Manager)</h3>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
     @forelse($globalPromos as $promo)
     <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
         <div class="p-4 bg-gradient-to-r from-elco-coffee to-elco-mocha">
             <div class="flex justify-between">
-                <span class="text-xs font-semibold text-white/80">🌐 Global</span>
+                <span class="text-xs font-semibold text-white/80">Global</span>
                 <span class="text-xs text-emerald-300 font-semibold">● Aktif</span>
             </div>
             <h3 class="font-display font-bold text-white mt-2">{{ $promo->name }}</h3>

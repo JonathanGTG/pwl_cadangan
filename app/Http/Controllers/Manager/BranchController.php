@@ -32,6 +32,9 @@ class BranchController extends Controller
             'admin_name'     => 'required|string|max:100',
             'admin_email'    => 'required|email|unique:users,email',
             'admin_password' => 'required|string|min:8',
+            'kasir_name'     => 'nullable|string|max:100|required_with:kasir_email,kasir_password',
+            'kasir_email'    => 'nullable|email|unique:users,email|required_with:kasir_name,kasir_password',
+            'kasir_password' => 'nullable|string|min:8|required_with:kasir_name,kasir_email',
         ]);
 
         // 1. Buat cabang
@@ -51,8 +54,22 @@ class BranchController extends Controller
             'branch_id' => $branch->id,
         ]);
 
+        $message = "Cabang {$branch->name} dan akun admin berhasil dibuat!";
+
+        if ($request->filled('kasir_email')) {
+            User::create([
+                'name'      => $request->kasir_name,
+                'email'     => $request->kasir_email,
+                'password'  => Hash::make($request->kasir_password),
+                'role'      => 'kasir',
+                'branch_id' => $branch->id,
+            ]);
+
+            $message = "Cabang {$branch->name}, akun admin, dan akun kasir berhasil dibuat!";
+        }
+
         return redirect()->route('manager.branches.index')
-                         ->with('success', "Cabang {$branch->name} dan akun admin berhasil dibuat!");
+                         ->with('success', $message);
     }
 
     public function edit(Branch $branch)

@@ -32,11 +32,11 @@ class Expense extends Model
     public function getCategoryLabelAttribute(): string
     {
         return match($this->category) {
-            'operasional' => '⚡ Operasional',
-            'bahan_baku'  => '☕ Bahan Baku',
-            'peralatan'   => '🔧 Peralatan',
-            'gaji'        => '👤 Gaji',
-            default       => '📋 Lainnya',
+            'operasional' => 'Operasional',
+            'bahan_baku'  => 'Bahan Baku',
+            'peralatan'   => 'Peralatan',
+            'gaji'        => 'Gaji',
+            default       => 'Lainnya',
         };
     }
 }

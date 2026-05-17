@@ -43,11 +43,11 @@
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white
                         @error('category') border-red-400 @enderror">
                         <option value="">Pilih Kategori</option>
-                        <option value="operasional" {{ old('category') === 'operasional' ? 'selected' : '' }}>⚡ Operasional</option>
-                        <option value="bahan_baku"  {{ old('category') === 'bahan_baku'  ? 'selected' : '' }}>☕ Bahan Baku</option>
-                        <option value="peralatan"   {{ old('category') === 'peralatan'   ? 'selected' : '' }}>🔧 Peralatan</option>
-                        <option value="gaji"        {{ old('category') === 'gaji'        ? 'selected' : '' }}>👤 Gaji</option>
-                        <option value="lainnya"     {{ old('category') === 'lainnya'     ? 'selected' : '' }}>📋 Lainnya</option>
+                        <option value="operasional" {{ old('category') === 'operasional' ? 'selected' : '' }}>Operasional</option>
+                        <option value="bahan_baku"  {{ old('category') === 'bahan_baku'  ? 'selected' : '' }}>Bahan Baku</option>
+                        <option value="peralatan"   {{ old('category') === 'peralatan'   ? 'selected' : '' }}>Peralatan</option>
+                        <option value="gaji"        {{ old('category') === 'gaji'        ? 'selected' : '' }}>Gaji</option>
+                        <option value="lainnya"     {{ old('category') === 'lainnya'     ? 'selected' : '' }}>Lainnya</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

@@ -15,7 +15,7 @@
 
 {{-- Filter Status --}}
 <div class="flex gap-2 mb-6 flex-wrap">
-    @foreach(['semua' => 'Semua', 'pending' => '⏳ Pending', 'approved' => '✅ Disetujui', 'rejected' => '❌ Ditolak'] as $val => $label)
+    @foreach(['semua' => 'Semua', 'pending' => 'Pending', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'] as $val => $label)
     <button onclick="filterStatus('{{ $val }}')" id="flt-{{ $val }}"
         class="px-4 py-2 rounded-xl text-sm font-medium smooth-transition
         {{ $val === 'semua' ? 'bg-elco-coffee text-white shadow-md' : 'bg-white text-gray-500 shadow-soft hover:bg-gray-50' }}">
@@ -60,7 +60,7 @@
                     <td class="py-4 px-5">
                         <span class="px-2 py-1 rounded-full text-xs font-medium
                             {{ $req->type === 'stock' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600' }}">
-                            {{ $req->type === 'stock' ? '📦 Stok' : '🔧 Operasional' }}
+                            {{ $req->type === 'stock' ? 'Stok' : 'Operasional' }}
                         </span>
                     </td>
 
@@ -75,17 +75,17 @@
                             {{ $req->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
                             {{ $req->status === 'approved' ? 'bg-emerald-100 text-emerald-700' : '' }}
                             {{ $req->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
-                            {{ $req->status === 'pending' ? '⏳ Pending'
-                                : ($req->status === 'approved' ? '✅ Disetujui' : '❌ Ditolak') }}
+                            {{ $req->status === 'pending' ? 'Pending'
+                                : ($req->status === 'approved' ? 'Disetujui' : 'Ditolak') }}
                         </span>
                         @if($req->status === 'approved')
                         <span class="px-2 py-1 rounded-full text-xs font-medium block w-fit mt-1
                             {{ $req->delivery_status === 'waiting'   ? 'bg-orange-100 text-orange-700' : '' }}
                             {{ $req->delivery_status === 'delivered' ? 'bg-blue-100 text-blue-700' : '' }}
                             {{ $req->delivery_status === 'confirmed' ? 'bg-purple-100 text-purple-700' : '' }}">
-                            {{ $req->delivery_status === 'waiting'   ? '🚚 Menunggu Kirim' : '' }}
-                            {{ $req->delivery_status === 'delivered' ? '📦 Barang Sampai' : '' }}
-                            {{ $req->delivery_status === 'confirmed' ? '✅ Stok Bertambah' : '' }}
+                            {{ $req->delivery_status === 'waiting'   ? 'Menunggu Kirim' : '' }}
+                            {{ $req->delivery_status === 'delivered' ? 'Barang Sampai' : '' }}
+                            {{ $req->delivery_status === 'confirmed' ? 'Stok Bertambah' : '' }}
                         </span>
                         @endif
                     </td>
@@ -162,7 +162,7 @@
                         @elseif($req->status === 'approved' && $req->delivery_status === 'waiting')
                         <span class="text-xs text-orange-500 font-medium">Menunggu konfirmasi admin</span>
                         @elseif($req->delivery_status === 'confirmed')
-                        <span class="text-xs text-purple-600 font-medium">✅ Selesai</span>
+                        <span class="text-xs text-purple-600 font-medium">Selesai</span>
                         @else
                         <span class="text-xs text-gray-400">—</span>
                         @endif

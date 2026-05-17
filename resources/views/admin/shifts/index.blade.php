@@ -43,7 +43,7 @@
                         {{ $schedule->shift === 'siang' ? 'bg-orange-50 text-orange-500' : '' }}
                         {{ $schedule->shift === 'malam' ? 'bg-blue-50 text-blue-500' : '' }}
                         flex items-center justify-center text-xl">
-                        {{ $schedule->shift === 'pagi' ? '🌅' : ($schedule->shift === 'siang' ? '☀️' : '🌙') }}
+                        <i class="ph {{ $schedule->shift === 'pagi' ? 'ph-sunrise' : ($schedule->shift === 'siang' ? 'ph-sun' : 'ph-moon') }}"></i>
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-gray-800">{{ $schedule->user->name }}</p>
@@ -119,9 +119,9 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Shift <span class="text-red-500">*</span></label>
                     <select name="shift" required
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm bg-white">
-                        <option value="pagi">🌅 Pagi (07–15)</option>
-                        <option value="siang">☀️ Siang (15–22)</option>
-                        <option value="malam">🌙 Malam (22–07)</option>
+                        <option value="pagi">Pagi (07–15)</option>
+                        <option value="siang">Siang (15–22)</option>
+                        <option value="malam">Malam (22–07)</option>
                     </select>
                 </div>
                 <div>

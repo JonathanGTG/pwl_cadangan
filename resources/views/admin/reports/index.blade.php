@@ -98,9 +98,7 @@
 
     {{-- Stok Kritis --}}
     <div class="bg-white rounded-3xl shadow-soft p-6">
-        <h3 class="font-display font-semibold text-gray-800 mb-4">
-            ⚠️ Stok Kritis
-        </h3>
+        <h3 class="font-display font-semibold text-gray-800 mb-4">Stok Kritis</h3>
         @if($criticalStocks->count() > 0)
         <div class="space-y-3">
             @foreach($criticalStocks as $stock)
@@ -136,11 +134,11 @@
         <div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
             <span class="text-sm text-gray-700">
                 {{ match($cat->category) {
-                    'operasional' => '⚡ Operasional',
-                    'bahan_baku'  => '☕ Bahan Baku',
-                    'peralatan'   => '🔧 Peralatan',
-                    'gaji'        => '👤 Gaji',
-                    default       => '📋 Lainnya'
+                    'operasional' => 'Operasional',
+                    'bahan_baku'  => 'Bahan Baku',
+                    'peralatan'   => 'Peralatan',
+                    'gaji'        => 'Gaji',
+                    default       => 'Lainnya'
                 } }}
             </span>
             <span class="text-sm font-bold text-red-600">

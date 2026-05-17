@@ -77,11 +77,11 @@
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-3">Pilih Shift</label>
                 <div class="grid grid-cols-3 gap-3">
-                    @foreach(['pagi' => ['🌅', 'Pagi', '07.00 - 15.00'], 'siang' => ['☀️', 'Siang', '15.00 - 22.00'], 'malam' => ['🌙', 'Malam', '22.00 - 07.00']] as $val => $info)
+                    @foreach(['pagi' => ['ph-sunrise', 'Pagi', '07.00 - 15.00'], 'siang' => ['ph-sun', 'Siang', '15.00 - 22.00'], 'malam' => ['ph-moon', 'Malam', '22.00 - 07.00']] as $val => $info)
                     <label class="cursor-pointer">
                         <input type="radio" name="shift" value="{{ $val }}" class="sr-only peer">
                         <div class="p-4 border-2 border-gray-200 rounded-2xl peer-checked:border-elco-coffee peer-checked:bg-elco-cream smooth-transition text-center">
-                            <p class="text-2xl mb-1">{{ $info[0] }}</p>
+                            <i class="ph {{ $info[0] }} text-2xl text-elco-coffee mb-1 block"></i>
                             <p class="text-sm font-semibold text-gray-700">{{ $info[1] }}</p>
                             <p class="text-xs text-gray-400 mt-0.5">{{ $info[2] }}</p>
                         </div>
@@ -136,7 +136,7 @@
     {{-- Jadwal Shift Saya --}}
     @php
         $mySchedules = \App\Models\ShiftSchedule::where('user_id', auth()->id())
-                        ->where('shift_date', '>=', today())
+                        ->where('shift_date', '>=', today()->subDay())
                         ->orderBy('shift_date')
                         ->orderBy('start_time')
                         ->take(7)
@@ -157,7 +157,7 @@
                         {{ $schedule->shift === 'siang' ? 'bg-orange-50' : '' }}
                         {{ $schedule->shift === 'malam' ? 'bg-blue-50' : '' }}
                         flex items-center justify-center text-2xl">
-                        {{ $schedule->shift === 'pagi' ? '🌅' : ($schedule->shift === 'siang' ? '☀️' : '🌙') }}
+                        <i class="ph {{ $schedule->shift === 'pagi' ? 'ph-sunrise' : ($schedule->shift === 'siang' ? 'ph-sun' : 'ph-moon') }} text-elco-coffee"></i>
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-gray-800">

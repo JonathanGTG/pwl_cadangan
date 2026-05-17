@@ -70,9 +70,9 @@
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition bg-white
                         @error('category') border-red-400 @enderror">
                         <option value="">Pilih Kategori</option>
-                        <option value="minuman" {{ old('category') === 'minuman' ? 'selected' : '' }}>☕ Minuman</option>
-                        <option value="makanan" {{ old('category') === 'makanan' ? 'selected' : '' }}>🍱 Makanan</option>
-                        <option value="snack"   {{ old('category') === 'snack'   ? 'selected' : '' }}>🍪 Snack</option>
+                        <option value="minuman" {{ old('category') === 'minuman' ? 'selected' : '' }}>Minuman</option>
+                        <option value="makanan" {{ old('category') === 'makanan' ? 'selected' : '' }}>Makanan</option>
+                        <option value="snack"   {{ old('category') === 'snack'   ? 'selected' : '' }}>Snack</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
