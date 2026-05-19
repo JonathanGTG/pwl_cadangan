@@ -200,7 +200,7 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction)
     {
-        $transaction->load('items', 'promotion', 'kasir');
+        $transaction->load('items', 'promotion', 'kasir', 'branch');
         return view('kasir.transactions.show', compact('transaction'));
     }
 

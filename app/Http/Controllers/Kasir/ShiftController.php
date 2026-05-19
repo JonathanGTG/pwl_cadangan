@@ -5,28 +5,41 @@ namespace App\Http\Controllers\Kasir;
 use App\Http\Controllers\Controller;
 use App\Models\KasirShift;
 use App\Models\ShiftSchedule;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ShiftController extends Controller
 {
+    private const TIMEZONE = 'Asia/Jakarta';
+
     public function index()
     {
-        $userId   = auth()->id();
-        $branchId = auth()->user()->branch_id;
+        $userId = auth()->id();
+        $today  = $this->localToday();
 
         $activeShift = KasirShift::where('user_id', $userId)
-                                  ->where('status', 'active')
-                                  ->first();
+            ->where('status', 'active')
+            ->first();
 
         $shiftHistory = KasirShift::where('user_id', $userId)
-                                   ->latest()
-                                   ->take(10)
-                                   ->get();
+            ->latest()
+            ->take(10)
+            ->get();
 
-        return view('kasir.shifts.index', compact('activeShift', 'shiftHistory'));
+        $mySchedules = ShiftSchedule::where('user_id', $userId)
+            ->where('shift_date', '>=', $today->copy()->subDay()->toDateString())
+            ->orderBy('shift_date')
+            ->orderBy('start_time')
+            ->take(7)
+            ->get();
+
+        return view('kasir.shifts.index', compact(
+            'activeShift',
+            'shiftHistory',
+            'mySchedules'
+        ));
     }
 
-    // Mulai shift
     public function clockIn(Request $request)
     {
         $request->validate([
@@ -34,24 +47,22 @@ class ShiftController extends Controller
         ]);
 
         $existing = KasirShift::where('user_id', auth()->id())
-                               ->where('status', 'active')
-                               ->first();
+            ->where('status', 'active')
+            ->first();
 
         if ($existing) {
             return back()->with('error', 'Kamu sudah memiliki shift aktif!');
         }
 
         $range = $this->shiftRanges()[$request->shift];
+
         if (! $this->isWithinShiftTime($request->shift)) {
             return back()->with('error', "Sekarang belum masuk jam shift {$request->shift} ({$range['start']} - {$range['end']}).");
         }
 
         $schedule = $this->resolveScheduleForClockIn($request->shift);
-        if (!$schedule) {
-            return back()->with('error', 'Tidak ada jadwal shift untuk kamu pada jam ini. Hubungi admin cabang.');
-        }
 
-        if (! $this->isWithinScheduleTime($schedule)) {
+        if ($schedule && ! $this->isWithinScheduleTime($schedule)) {
             return back()->with('error', "Shift {$request->shift} hanya bisa dimulai pada jam {$schedule->start_time} - {$schedule->end_time}.");
         }
 
@@ -59,21 +70,22 @@ class ShiftController extends Controller
             'user_id'    => auth()->id(),
             'branch_id'  => auth()->user()->branch_id,
             'shift'      => $request->shift,
-            'shift_date' => $schedule->shift_date,
-            'clock_in'   => now()->format('H:i:s'),
+            'shift_date' => $schedule?->shift_date ?? $this->shiftDateForClockIn($request->shift),
+            'clock_in'   => $this->localNow()->format('H:i:s'),
             'status'     => 'active',
         ]);
 
         return back()->with('success', 'Shift dimulai! Selamat bekerja');
     }
 
-    // Selesai shift
     public function clockOut(KasirShift $shift)
     {
-        if ($shift->user_id !== auth()->id()) abort(403);
+        if ($shift->user_id !== auth()->id()) {
+            abort(403);
+        }
 
         $shift->update([
-            'clock_out' => now()->format('H:i:s'),
+            'clock_out' => $this->localNow()->format('H:i:s'),
             'status'    => 'finished',
         ]);
 
@@ -82,10 +94,14 @@ class ShiftController extends Controller
 
     private function resolveScheduleForClockIn(string $shift): ?ShiftSchedule
     {
-        $userId = auth()->id();
-        $candidates = ShiftSchedule::where('user_id', $userId)
+        $today = $this->localToday();
+
+        $candidates = ShiftSchedule::where('user_id', auth()->id())
             ->where('shift', $shift)
-            ->whereBetween('shift_date', [today()->subDay(), today()])
+            ->whereBetween('shift_date', [
+                $today->copy()->subDay()->toDateString(),
+                $today->toDateString(),
+            ])
             ->orderByDesc('shift_date')
             ->get();
 
@@ -100,32 +116,57 @@ class ShiftController extends Controller
 
     private function isWithinScheduleTime(ShiftSchedule $schedule): bool
     {
-        $start = $schedule->shift_date->copy()->setTimeFromTimeString($schedule->start_time);
-        $end   = $schedule->shift_date->copy()->setTimeFromTimeString($schedule->end_time);
+        $date = $schedule->shift_date->format('Y-m-d');
 
-        if ($schedule->end_time <= $schedule->start_time) {
+        $start = Carbon::parse($date . ' ' . $schedule->start_time, self::TIMEZONE);
+        $end   = Carbon::parse($date . ' ' . $schedule->end_time, self::TIMEZONE);
+
+        if ($end->lessThanOrEqualTo($start)) {
             $end->addDay();
         }
 
-        return now()->betweenIncluded($start, $end);
+        return $this->localNow()->betweenIncluded($start, $end);
     }
 
     private function isWithinShiftTime(string $shift): bool
     {
-        $range = $this->shiftRanges()[$shift];
-        $now = now()->format('H:i');
+        $range = $this->shiftRanges();
+        $shiftRange = $range[$shift];
 
-        if ($range['end'] < $range['start']) {
-            return $now >= $range['start'] || $now < $range['end'];
+        $now = $this->localNow()->format('H:i');
+
+        if ($shiftRange['end'] < $shiftRange['start']) {
+            return $now >= $shiftRange['start'] || $now < $shiftRange['end'];
         }
 
-        return $now >= $range['start'] && $now < $range['end'];
+        return $now >= $shiftRange['start'] && $now < $shiftRange['end'];
+    }
+
+    private function shiftDateForClockIn(string $shift): string
+    {
+        $now = $this->localNow();
+
+        if ($shift === 'malam' && $now->format('H:i') < '07:00') {
+            return $now->copy()->subDay()->toDateString();
+        }
+
+        return $now->toDateString();
+    }
+
+    private function localNow(): Carbon
+    {
+        return Carbon::now(self::TIMEZONE);
+    }
+
+    private function localToday(): Carbon
+    {
+        return $this->localNow()->startOfDay();
     }
 
     private function shiftRanges(): array
     {
         return [
-            'pagi' => ['start' => '07:00', 'end' => '15:00'],
+            'pagi'  => ['start' => '07:00', 'end' => '15:00'],
             'siang' => ['start' => '15:00', 'end' => '22:00'],
             'malam' => ['start' => '22:00', 'end' => '07:00'],
         ];
